@@ -53,10 +53,10 @@ classDiagram
   }
   <<Trait>> IterativeEngine
   IterativeEngine --> State : uses
-  
+
   class JacobiEngine
   JacobiEngine --> IterativeEngine : implements
-  
+
   class RichardsonEngine
   RichardsonEngine --> IterativeEngine : implements
 
