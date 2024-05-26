@@ -4,6 +4,7 @@ project('dasscc', 'cpp',
                      'cpp_std=c++20'])
 
 dasscc = library('dasscc', [
+    './src/dasscc/matrix.cc'
   ], install: true,
   include_directories: './include')
 
