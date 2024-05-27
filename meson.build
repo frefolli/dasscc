@@ -12,7 +12,7 @@ dasscc = library('dasscc', [
     'src/dasscc/matrix.cc',
     'src/dasscc/state.cc',
   ], install: true,
-  include_directories: './include')
+  include_directories: ['./include', 'C:/msys64/ucrt64/include/eigen3'])
 
 exe = executable('main.exe', [
     'src/main.cc',
