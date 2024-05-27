@@ -4,10 +4,11 @@
 /** @file */
 namespace dasscc {
   /** trait */
-  struct BackwardSubstitutionSolver : public DirectSolver {
-    Result<Eigen::SparseMatrix<double_t>, Eigen::SparseMatrix<double_t>> run(
+  class BackwardSubstitutionSolver : public DirectSolver {
+    public:
+    Result<Eigen::SparseVector<double_t>> run(
       Eigen::SparseMatrix<double_t> &A,
-      Eigen::SparseMatrix<double_t> &b
+      Eigen::SparseVector<double_t> &b
     );
   };
 }

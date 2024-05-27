@@ -4,7 +4,8 @@
 #include <dasscc/state.hh>
 namespace dasscc {
   /** trait */
-  struct IterativeEngine {
+  class IterativeEngine {
+    public:
     virtual void post_initialize(State& state) = 0;
     virtual void pre_compute_y(State& state) = 0;
     virtual void compute_y(State& state) = 0;

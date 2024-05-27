@@ -4,12 +4,13 @@
 #include <dasscc/iterative_engine.hh>
 /** @file */
 namespace dasscc {
-  struct IterativeSolver : public IndirectSolver {
-    IterativeEngine& engine;
-
-    Result<Eigen::SparseMatrix<double_t>, Eigen::SparseMatrix<double_t>> run(
+  class IterativeSolver : public IndirectSolver {
+    public:
+    IterativeEngine* engine;
+    
+    Result<Eigen::SparseVector<double_t>> run(
       Eigen::SparseMatrix<double_t> &A,
-      Eigen::SparseMatrix<double_t> &b,
+      Eigen::SparseVector<double_t> &b,
       double_t tol,
       uint32_t maxIter
     );

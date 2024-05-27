@@ -6,10 +6,11 @@
 /** @file */
 namespace dasscc {
   /** trait */
-  struct IndirectSolver {
-    virtual Result<Eigen::SparseMatrix<double_t>, Eigen::SparseMatrix<double_t>> run(
+  class IndirectSolver {
+    public:
+    virtual Result<Eigen::SparseVector<double_t>> run(
       Eigen::SparseMatrix<double_t> &A,
-      Eigen::SparseMatrix<double_t> &b,
+      Eigen::SparseVector<double_t> &b,
       double_t tol,
       uint32_t maxIter
     ) = 0;

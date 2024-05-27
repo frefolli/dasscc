@@ -6,10 +6,13 @@
 /** @file */
 namespace dasscc {
   /** trait */
-  struct DirectSolver {
-    virtual Result<Eigen::SparseMatrix<double_t>, Eigen::SparseMatrix<double_t>> run(
+  class DirectSolver {
+    public:
+    enum ExitCode {ERR};
+
+    virtual Result<Eigen::SparseVector<double_t>> run(
       Eigen::SparseMatrix<double_t> &A,
-      Eigen::SparseMatrix<double_t> &b
+      Eigen::SparseVector<double_t> &b
     ) = 0;
   };
 }
