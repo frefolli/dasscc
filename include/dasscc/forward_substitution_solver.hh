@@ -4,12 +4,13 @@
 /** @file */
 namespace dasscc {
   /** trait */
-  class ForwardSubstitutionSolver : public DirectSolver {
+  class ForwardSubstitutionSolver {
     public:
-    Result<Eigen::SparseVector<double_t>> run(
-      Eigen::SparseMatrix<double_t> &A,
-      Eigen::SparseVector<double_t> &b
-    );
+      Result<Eigen::SparseVector<double_t>> run(
+        Eigen::SparseMatrix<double_t> &A,
+        Eigen::SparseVector<double_t> &b
+      );
+      ImplTrait(ForwardSubstitutionSolver, DirectSolver);
   };
 }
 #endif//DASSCC_FORWARD_SUBSTITUTION_SOLVER_HH
