@@ -9,7 +9,7 @@
 /** @file */
 namespace dasscc {
   template<typename Engine>
-  class IterativeSolver : public IndirectSolver {
+  class IterativeSolver {
     ImplTrait(Engine, IterativeEngine);
     Engine engine;
 
@@ -77,6 +77,7 @@ namespace dasscc {
         } 
         return dasscc::Result<Eigen::SparseVector<double_t>>::Err();
       }
+      ImplTrait(IterativeSolver<Engine>, IndirectSolver);
   };
 }
 #endif//DASSCC_ITERATIVE_SOLVER_HH
