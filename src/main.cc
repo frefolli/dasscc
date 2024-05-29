@@ -33,9 +33,7 @@ int main(int argc, char** args) {
   assert(dasscc::DumpToFile(xe, "xe.mtx"));
   assert(dasscc::DumpToFile(b, "b.mtx"));
   
-  dasscc::JacobiEngine engine;
-  dasscc::IterativeSolver solver;
-  solver.engine = &engine;
+  dasscc::IterativeSolver<dasscc::JacobiEngine> solver;
   dasscc::Result result = solver.run(A, b, 10e-6, 20000);
   assert(result.type == result.OK);
   

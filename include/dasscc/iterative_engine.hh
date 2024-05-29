@@ -2,14 +2,21 @@
 #define DASSCC_ITERATIVE_ENGINE_HH
 /** @file */
 #include <dasscc/state.hh>
+#include <dasscc/traits.hh>
 namespace dasscc {
-  /** trait */
-  class IterativeEngine {
-    public:
-    virtual void post_initialize(State& state) = 0;
-    virtual void pre_compute_y(State& state) = 0;
-    virtual void compute_y(State& state) = 0;
-    virtual void post_compute_x(State& state) = 0;
-  };
+  /** trait for Iterative Engine
+   *
+   * Example of usage:
+   *
+   * ```
+   * ImplTrait(TheEngine, IterativeEngine);
+   * ```
+   * */
+  Trait(IterativeEngine, 
+    Fn(void, post_initialize, (State&))
+    Fn(void, pre_compute_y, (State&))
+    Fn(void, compute_y, (State&))
+    Fn(void, post_compute_x, (State&))
+  )
 }
 #endif//DASSCC_ITERATIVE_ENGINE_HH

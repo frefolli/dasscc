@@ -5,7 +5,7 @@
 #include <dasscc/iterative_engine.hh>
 namespace dasscc {
   /** trait */
-  class JacobiEngine : public IterativeEngine {
+  class JacobiEngine {
     public:
     /**
      * Compute Jacobi Q from A
@@ -31,5 +31,7 @@ namespace dasscc {
     */
     void post_compute_x(State& state);
   };
+
+  ImplTrait(JacobiEngine, IterativeEngine);
 }
 #endif//DASSCC_JACOBI_ENGINE_HH

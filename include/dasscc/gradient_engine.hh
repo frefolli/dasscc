@@ -5,12 +5,18 @@
 #include <dasscc/iterative_engine.hh>
 namespace dasscc {
   /** trait */
-  class GradientEngine : IterativeEngine {
+  class GradientEngine {
     public:
-    void post_initialize(State& state);
-    void pre_compute_y(State& state);
-    void compute_y(State& state);
-    void post_compute_x(State& state);
+      /** TODO: */
+      void post_initialize(State& state);
+      /** TODO: */
+      void pre_compute_y(State& state);
+      /** TODO: */
+      void compute_y(State& state);
+      /** TODO: */
+      void post_compute_x(State& state);
   };
+
+  ImplTrait(GradientEngine, IterativeEngine);
 }
 #endif//DASSCC_GRADIENT_ENGINE_HH

@@ -1,2 +1,2 @@
 @all:
-	doxygen.exe Doxifile.in
+	doxygen Doxifile.in

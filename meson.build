@@ -6,13 +6,12 @@ project('dasscc', 'cpp',
 dasscc = library('dasscc', [
     'src/dasscc/backward_substitution_solver.cc',
     'src/dasscc/forward_substitution_solver.cc',
-    'src/dasscc/iterative_solver.cc',
     'src/dasscc/jacobi_engine.cc',
     'src/dasscc/logging.cc',
     'src/dasscc/matrix.cc',
     'src/dasscc/state.cc',
   ], install: true,
-  include_directories: ['./include', 'C:/msys64/ucrt64/include/eigen3'])
+  include_directories: ['./include'])
 
 exe = executable('main.exe', [
     'src/main.cc',
