@@ -15,7 +15,7 @@ namespace dasscc {
 
     public:
     
-      Result<Eigen::SparseVector<double_t>> run(Eigen::SparseMatrix<double_t> &A,
+      Result<Eigen::SparseVector<double_t>> run(Eigen::SparseMatrix<double_t, Eigen::RowMajor> &A,
                                                 Eigen::SparseVector<double_t> &b,
                                                 double_t tol,
                                                 uint32_t maxIter) {

@@ -10,15 +10,15 @@
 #include <Spectra/GenEigsSolver.h>
 #include <Spectra/Util/CompInfo.h>
 
-bool dasscc::LoadFromFile(Eigen::SparseMatrix<double_t>& matrix, const std::string& filepath) {
+bool dasscc::LoadFromFile(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath) {
   return (Eigen::loadMarket(matrix, filepath));
 }
 
-bool dasscc::DumpToFile(const Eigen::SparseMatrix<double_t>& matrix, const std::string& filepath) {
+bool dasscc::DumpToFile(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath) {
   return (Eigen::saveMarket(matrix, filepath));
 }
 
-void dasscc::Random(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, uint32_t M, double_t density) {
+void dasscc::Random(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, uint32_t M, double_t density) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> valdis(0, 1.0);
@@ -46,7 +46,7 @@ void dasscc::Random(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, uint32_t 
   matrix.setFromTriplets(tripletList.begin(), tripletList.end());
 }
 
-void dasscc::RandomLowerTriangular(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, uint32_t M, double_t density) {
+void dasscc::RandomLowerTriangular(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, uint32_t M, double_t density) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> valdis(0, 1.0);
@@ -74,7 +74,7 @@ void dasscc::RandomLowerTriangular(Eigen::SparseMatrix<double_t>& matrix, uint32
   matrix.setFromTriplets(tripletList.begin(), tripletList.end());
 }
 
-void dasscc::RandomUpperTriangular(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, uint32_t M, double_t density) {
+void dasscc::RandomUpperTriangular(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, uint32_t M, double_t density) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_real_distribution<> valdis(0, 1.0);
@@ -106,24 +106,33 @@ void dasscc::RandomUpperTriangular(Eigen::SparseMatrix<double_t>& matrix, uint32
   matrix.setFromTriplets(tripletList.begin(), tripletList.end());
 }
 
-void dasscc::RandomSymmetricPositiveDefined(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, double_t density) {
-  Eigen::SparseMatrix<double_t> Q;
+void dasscc::RandomSymmetricPositiveDefined(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, double_t density) {
+  Eigen::SparseMatrix<double_t, Eigen::RowMajor> Q;
   dasscc::Random(Q, N, N, density);
-  matrix = (Eigen::SparseMatrix<double_t>(Q.transpose()) * Q);
+  matrix = (Eigen::SparseMatrix<double_t, Eigen::RowMajor>(Q.transpose()) * Q);
   for (uint32_t i = 0; i < N; i++)
     matrix.coeffRef(i, i) += 1;
 }
 
-void dasscc::RandomDiagonalDominant(Eigen::SparseMatrix<double_t>& matrix, uint32_t N, double_t density) {
-  Eigen::SparseMatrix<double_t> Q;
+void dasscc::RandomRowDiagonalDominant(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, double_t density) {
+  Eigen::SparseMatrix<double_t, Eigen::RowMajor> Q;
   dasscc::Random(Q, N, N, density);
-  matrix = (Eigen::SparseMatrix<double_t>(Q.transpose()) * Q);
+  matrix = (Eigen::SparseMatrix<double_t, Eigen::RowMajor>(Q.transpose()) * Q);
   for (uint32_t i = 0; i < N; i++) {
-    matrix.coeffRef(i, i) = (abs(matrix.col(i).sum()) + abs(matrix.row(i).sum()) + matrix.coeff(i, i) + 10) * 20;
+    matrix.coeffRef(i, i) = (abs(matrix.row(i).sum()) + matrix.coeff(i, i) + 10) * 20;
   }
 }
 
-bool dasscc::IsSymmetricPositiveDefined(const Eigen::SparseMatrix<double_t>& matrix) {
+void dasscc::RandomColumnDiagonalDominant(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, double_t density) {
+  Eigen::SparseMatrix<double_t, Eigen::RowMajor> Q;
+  dasscc::Random(Q, N, N, density);
+  matrix = (Eigen::SparseMatrix<double_t, Eigen::RowMajor>(Q.transpose()) * Q);
+  for (uint32_t i = 0; i < N; i++) {
+    matrix.coeffRef(i, i) = (abs(matrix.col(i).sum()) + matrix.coeff(i, i) + 10) * 20;
+  }
+}
+
+bool dasscc::IsSymmetricPositiveDefined(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix) {
   Eigen::MatrixXd eigenvalues;
   if (!dasscc::Eigenvalues(eigenvalues, matrix))
     RaiseFatalError("unable to compute eigenvalues of possibly-PSD sparse matrix");
@@ -148,7 +157,7 @@ void dasscc::ArrayOfOnes(Eigen::SparseVector<double_t>& matrix, uint32_t N) {
   matrix.data().squeeze(); 
 }
 
-void dasscc::Identity(Eigen::SparseMatrix<double_t>& matrix, uint32_t N) {
+void dasscc::Identity(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N) {
   matrix.resize(N, N);
   matrix.reserve(N);
   matrix.setIdentity();
@@ -158,10 +167,10 @@ void dasscc::Identity(Eigen::SparseMatrix<double_t>& matrix, uint32_t N) {
 /**
  * Computes eigenvalues of a Sparse Matrix into a Vector of std::complex<double_t>
 */
-inline bool _Eigenvalues(Eigen::MatrixXcd& eigenvalues, const Eigen::SparseMatrix<double_t>& matrix) {
+inline bool _Eigenvalues(Eigen::MatrixXcd& eigenvalues, const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix) {
   uint32_t N = matrix.cols();
-  Spectra::SparseSymMatProd<double_t> operating(matrix);
-  Spectra::GenEigsSolver<Spectra::SparseSymMatProd<double_t>> solver(operating, N - 2, N);
+  Spectra::SparseSymMatProd<double_t, 1, Eigen::RowMajor> operating(matrix);
+  Spectra::GenEigsSolver<decltype(operating)> solver(operating, N - 2, N);
   solver.init();
   (void)solver.compute();
   if(solver.info() == Spectra::CompInfo::Successful) {
@@ -171,7 +180,7 @@ inline bool _Eigenvalues(Eigen::MatrixXcd& eigenvalues, const Eigen::SparseMatri
   return false;
 }
 
-bool dasscc::Eigenvalues(double_t& smallest, double_t& biggest, const Eigen::SparseMatrix<double_t>& matrix) {
+bool dasscc::Eigenvalues(double_t& smallest, double_t& biggest, const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix) {
   Eigen::MatrixXcd found;
   if (!_Eigenvalues(found, matrix))
     return false;
@@ -181,7 +190,7 @@ bool dasscc::Eigenvalues(double_t& smallest, double_t& biggest, const Eigen::Spa
   return true;
 }
 
-bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix<double_t>& matrix) {
+bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix) {
   Eigen::MatrixXcd found;
   if (!_Eigenvalues(found, matrix))
     return false;
@@ -190,4 +199,76 @@ bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix
   for (uint32_t i = 0; i < rows; i++)
     eigenvalues.coeffRef(i, 0) = found.coeff(i, 0).real();
   return true;
+}
+
+dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
+  dasscc::MatrixSpecifier result = {.type = dasscc::MatrixSpecifier::Type::NONE, .ID = "", .N = 0, .density = 0.0};
+  std::string buffer;
+  for (char c : pattern) {
+    if (c == ':') {
+      if (buffer.size() > 0) {
+        switch (result.type) {
+          case dasscc::MatrixSpecifier::Type::NONE: {
+            if (buffer == "src") {
+              result.type = dasscc::MatrixSpecifier::Type::SRC;
+            } else if (buffer == "spd") {
+              result.type = dasscc::MatrixSpecifier::Type::SPD;
+            } else if (buffer == "ut") {
+              result.type = dasscc::MatrixSpecifier::Type::UT;
+            } else if (buffer == "lt") {
+              result.type = dasscc::MatrixSpecifier::Type::LT;
+            } else if (buffer == "cdd") {
+              result.type = dasscc::MatrixSpecifier::Type::CDD;
+            } else if (buffer == "rdd") {
+              result.type = dasscc::MatrixSpecifier::Type::RDD;
+            }
+          }; break;
+          case dasscc::MatrixSpecifier::Type::SRC: {
+            result.ID = buffer;
+          }; break;
+          default: {
+            if (result.N > 0) {
+              result.density = std::stod(buffer);
+            } else {
+              result.N = std::stoi(buffer);
+            }
+          }; break;
+        }
+        buffer.clear();
+      }
+    } else {
+      buffer += c;
+    }
+  }
+  return result;
+}
+
+bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, std::string pattern) {
+  dasscc::MatrixSpecifier request = dasscc::ParseMatrixSpecifier(pattern);
+  bool success = true;
+  switch (request.type) {
+    case dasscc::MatrixSpecifier::Type::SPD: {
+      dasscc::RandomSymmetricPositiveDefined(matrix, request.N, request.density);
+    }; break;
+    case dasscc::MatrixSpecifier::Type::UT: {
+      dasscc::RandomUpperTriangular(matrix, request.N, request.N, request.density);
+    }; break;
+    case dasscc::MatrixSpecifier::Type::LT: {
+      dasscc::RandomLowerTriangular(matrix, request.N, request.N, request.density);
+    }; break;
+    case dasscc::MatrixSpecifier::Type::CDD: {
+      dasscc::RandomColumnDiagonalDominant(matrix, request.N, request.density);
+    }; break;
+    case dasscc::MatrixSpecifier::Type::RDD: {
+      dasscc::RandomRowDiagonalDominant(matrix, request.N, request.density);
+    }; break;
+    case dasscc::MatrixSpecifier::Type::SRC: {
+      std::string path = "resources/matrices/" + request.ID + ".mtx";
+      success = dasscc::LoadFromFile(matrix, path);
+    }; break;
+    default: {
+      success = false;
+    };
+  }
+  return success;
 }

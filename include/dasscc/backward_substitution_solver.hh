@@ -7,10 +7,10 @@ namespace dasscc {
   class BackwardSubstitutionSolver {
     public:
       Result<Eigen::SparseVector<double_t>> run(
-        Eigen::SparseMatrix<double_t> &A,
+        Eigen::SparseMatrix<double_t, Eigen::RowMajor> &A,
         Eigen::SparseVector<double_t> &b
       );
-      ImplTrait(BackwardSubstitutionSolver, DirectSolver);
+      ImplTrait(BackwardSubstitutionSolver, DirectSolver)
   };
 }
 #endif//DASSCC_BACKWARD_SUBSTITUTION_SOLVER_HH

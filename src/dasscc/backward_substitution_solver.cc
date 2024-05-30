@@ -1,7 +1,7 @@
 #include <dasscc/backward_substitution_solver.hh>
 #include <dasscc/matrix.hh>
 
-dasscc::Result<Eigen::SparseVector<double_t>> dasscc::BackwardSubstitutionSolver::run(Eigen::SparseMatrix<double_t> &A, Eigen::SparseVector<double_t> &b) {
+dasscc::Result<Eigen::SparseVector<double_t>> dasscc::BackwardSubstitutionSolver::run(Eigen::SparseMatrix<double_t, Eigen::RowMajor> &A, Eigen::SparseVector<double_t> &b) {
   const int32_t N = A.cols();
   Eigen::SparseVector<double_t> x;
   dasscc::ArrayOfZeros(x, N);

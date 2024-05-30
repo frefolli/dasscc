@@ -7,7 +7,7 @@ namespace dasscc {
   class ForwardSubstitutionSolver {
     public:
       Result<Eigen::SparseVector<double_t>> run(
-        Eigen::SparseMatrix<double_t> &A,
+        Eigen::SparseMatrix<double_t, Eigen::RowMajor> &A,
         Eigen::SparseVector<double_t> &b
       );
       ImplTrait(ForwardSubstitutionSolver, DirectSolver);

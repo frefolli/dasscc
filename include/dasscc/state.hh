@@ -7,11 +7,11 @@
 namespace dasscc {
   /** unfortunately we don't have a powerful macro system */
   struct State {
-    Eigen::SparseMatrix<double_t> A;
+    Eigen::SparseMatrix<double_t, Eigen::RowMajor> A;
     Eigen::SparseVector<double_t> b;
     Eigen::SparseVector<double_t> y;
-    Eigen::SparseMatrix<double_t> P;
-    Eigen::SparseMatrix<double_t> Q;
+    Eigen::SparseMatrix<double_t, Eigen::RowMajor> P;
+    Eigen::SparseMatrix<double_t, Eigen::RowMajor> Q;
     Eigen::SparseVector<double_t> x_k;
     Eigen::SparseVector<double_t> x_n;
     Eigen::SparseVector<double_t> r_k;

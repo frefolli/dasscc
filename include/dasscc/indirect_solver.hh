@@ -8,7 +8,7 @@
 namespace dasscc {
   /** trait for Indirect Solver */
   Trait(IndirectSolver,
-    Fn(Result<Eigen::SparseVector<double_t>>, run, (Eigen::SparseMatrix<double_t>&,
+    Fn(Result<Eigen::SparseVector<double_t>>, run, (Eigen::SparseMatrix<double_t, Eigen::RowMajor>&,
                                                     Eigen::SparseVector<double_t>&,
                                                     double_t, uint32_t)))
 }
