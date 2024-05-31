@@ -100,10 +100,17 @@ namespace dasscc {
   MatrixSpecifier ParseMatrixSpecifier(std::string pattern);
 
   /**
-   * Creates a matrix from a specifier
+   * Creates a matrix from a pattern of specifier
    * @param matrix output matrix
    * @param pattern input pattern
   */
   bool FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, std::string pattern);
+
+  /**
+   * Creates a matrix from a concrete specifier
+   * @param matrix output matrix
+   * @param specifier input specifier
+  */
+  bool FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, MatrixSpecifier& specifier);
 };
 #endif//DASSCC_MATRIX_HH

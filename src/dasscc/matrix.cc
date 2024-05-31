@@ -39,7 +39,10 @@ void dasscc::Random(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint
     }
 
     nnz_pos.insert(pos);
-    tripletList.push_back(Eigen::Triplet<double>(r, c, valdis(gen)));
+    double_t val = valdis(gen);
+    while(val == 0.0)
+      val = valdis(gen);
+    tripletList.push_back(Eigen::Triplet<double>(r, c, val));
   }
 
   matrix.resize(N, M);
@@ -72,6 +75,9 @@ void dasscc::RandomLowerTriangular(Eigen::SparseMatrix<double_t, Eigen::RowMajor
 
   matrix.resize(N, M);
   matrix.setFromTriplets(tripletList.begin(), tripletList.end());
+  uint32_t L = std::min(N, M);
+  for (uint32_t i = 0; i < L; i++)
+    matrix.coeffRef(i, i) += 1;
 }
 
 void dasscc::RandomUpperTriangular(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, uint32_t M, double_t density) {
@@ -99,11 +105,17 @@ void dasscc::RandomUpperTriangular(Eigen::SparseMatrix<double_t, Eigen::RowMajor
     }
 
     nnz_pos.insert(pos);
-    tripletList.push_back(Eigen::Triplet<double>(r, c, valdis(gen)));
+    double_t val = valdis(gen);
+    while(val == 0.0)
+      val = valdis(gen);
+    tripletList.push_back(Eigen::Triplet<double>(r, c, val));
   }
 
   matrix.resize(N, M);
   matrix.setFromTriplets(tripletList.begin(), tripletList.end());
+  uint32_t L = std::min(N, M);
+  for (uint32_t i = 0; i < L; i++)
+    matrix.coeffRef(i, i) += 1;
 }
 
 void dasscc::RandomSymmetricPositiveDefined(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, double_t density) {
@@ -202,7 +214,13 @@ bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix
 }
 
 dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
-  dasscc::MatrixSpecifier result = {.type = dasscc::MatrixSpecifier::Type::NONE, .ID = "", .N = 0, .density = 0.0};
+  dasscc::MatrixSpecifier result = {
+    .type = dasscc::MatrixSpecifier::Type::NONE,
+    .ID = "",
+    .N = 50,
+    .density = 0.05
+  };
+  bool already_read_N = false;
   std::string buffer;
   for (char c : pattern) {
     if (c == ':') {
@@ -227,10 +245,11 @@ dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
             result.ID = buffer;
           }; break;
           default: {
-            if (result.N > 0) {
+            if (already_read_N) {
               result.density = std::stod(buffer);
             } else {
               result.N = std::stoi(buffer);
+              already_read_N = true;
             }
           }; break;
         }
@@ -244,26 +263,30 @@ dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
 }
 
 bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, std::string pattern) {
-  dasscc::MatrixSpecifier request = dasscc::ParseMatrixSpecifier(pattern);
+  dasscc::MatrixSpecifier specifier = dasscc::ParseMatrixSpecifier(pattern);
+  return dasscc::FromMatrixSpecifier(matrix, specifier);
+}
+  
+bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, dasscc::MatrixSpecifier& specifier) {
   bool success = true;
-  switch (request.type) {
+  switch (specifier.type) {
     case dasscc::MatrixSpecifier::Type::SPD: {
-      dasscc::RandomSymmetricPositiveDefined(matrix, request.N, request.density);
+      dasscc::RandomSymmetricPositiveDefined(matrix, specifier.N, specifier.density);
     }; break;
     case dasscc::MatrixSpecifier::Type::UT: {
-      dasscc::RandomUpperTriangular(matrix, request.N, request.N, request.density);
+      dasscc::RandomUpperTriangular(matrix, specifier.N, specifier.N, specifier.density);
     }; break;
     case dasscc::MatrixSpecifier::Type::LT: {
-      dasscc::RandomLowerTriangular(matrix, request.N, request.N, request.density);
+      dasscc::RandomLowerTriangular(matrix, specifier.N, specifier.N, specifier.density);
     }; break;
     case dasscc::MatrixSpecifier::Type::CDD: {
-      dasscc::RandomColumnDiagonalDominant(matrix, request.N, request.density);
+      dasscc::RandomColumnDiagonalDominant(matrix, specifier.N, specifier.density);
     }; break;
     case dasscc::MatrixSpecifier::Type::RDD: {
-      dasscc::RandomRowDiagonalDominant(matrix, request.N, request.density);
+      dasscc::RandomRowDiagonalDominant(matrix, specifier.N, specifier.density);
     }; break;
     case dasscc::MatrixSpecifier::Type::SRC: {
-      std::string path = "resources/matrices/" + request.ID + ".mtx";
+      std::string path = "resources/matrices/" + specifier.ID + ".mtx";
       success = dasscc::LoadFromFile(matrix, path);
     }; break;
     default: {

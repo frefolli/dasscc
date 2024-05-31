@@ -2,11 +2,11 @@
 
 | Notation | Meaning | Notes |
 | -------- | ------- | ----- |
-| $r_k$ | $b - Ax_k$ | also called residual of $x_k$ |
-| $Vector::zeros(M)$ | $[0, 0, ... 0]$ | denotes a length M vector of zeros |
-| $MAX\_ITER$ | Maximum number of iterations | must be set at compile time with a value > 20000$ |
-| $Q$ | $Q = P^-1$ | |
-| $r_n$ | $r_n = r_{k+1}$ | |
+| \f$r_k\f$ | \f$b - Ax_k\f$ | also called residual of \f$x_k\f$ |
+| \f$Vector::zeros(M)\f$ | \f$[0, 0, ... 0]\f$ | denotes a length M vector of zeros |
+| \f$MAX\_ITER\f$ | Maximum number of iterations | must be set at compile time with a value > 20000 |
+| \f$Q\f$ | \f$Q = P^-1\f$ | |
+| \f$r_n\f$ | \f$r_n = r_{k+1}\f$ | |
 
 ## Direct
 
@@ -82,7 +82,7 @@ fn gauss_seidel(A: Matrix<N, M>, b: Vector<M>, tol: Float) -> Result<Vector<M>, 
     if norm(r_k) / norm(b) < tol {
       Ok(x_k)
     }
-    Py = r_k;
+    y = forward_substitution(P, r_k);
     x_n = x_k + y;
     r_n = b - A * x_n;
   Err(x_last)
@@ -119,7 +119,7 @@ fn gradient(A: Matrix<N, M>, b: Vector<M>, tol: Float) -> Result<Vector<M>, Vect
     if norm(r_k) / norm(b) < tol {
       Ok(x_k)
     }
-    alpha_k = (r_k' * r_k) / (r_k' * A * r_k);
+    alpha_k = (r_k.transpose() * r_k) / (r_k.transpose() * A * r_k);
     y = alpha_k * r_k;
     x_n = x_k + y;
     r_n = b - A * x_n;
@@ -141,12 +141,12 @@ fn conjugate_gradient(A: Matrix<N, M>, b: Vector<M>, tol: Float) -> Result<Vecto
     if norm(r_k) / norm(b) < tol {
       Ok(x_k)
     }
-    alpha_k = (d_k * r_k) / (r_k * v_k);
+    alpha_k = (d_k.transpose() * r_k) / (r_k.transpose() * v_k);
     y = alpha_k * d_k;
     x_n = x_k + y;
     r_n = b - A * x_n;
     z_n = A * r_n;
-    beta_k = (d_k * z_n) / (d_k * v_k);
+    beta_k = (d_k.transpose() * z_n) / (d_k.transpose() * v_k);
     d_n = r_n - beta_k * d_k;
     v_n = A * d_n;
   }
