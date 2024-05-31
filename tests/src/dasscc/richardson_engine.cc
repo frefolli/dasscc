@@ -5,7 +5,7 @@
 #include <dasscc/testing.hh>
 #include <cassert>
 
-void TestRichardsonEngine() {
+int main() {
   dasscc::MatrixSpecifier matrix_specifier = {
     .type = dasscc::MatrixSpecifier::Type::RDD,
     .N = dasscc::TESTING_MATRIX_SIZE,

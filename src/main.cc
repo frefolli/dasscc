@@ -11,7 +11,7 @@ int main(int argc, char** args) {
   for (int32_t i = 1; i < argc; ++i) {
     std::string argument = args[i];
     if (argument == "-h" || argument == "--help") {
-      std::cerr << "usage: " << args[0] << " [-m <matrix-pattern>]" << std::endl;
+      std::cerr << "usage: " << args[0] << " [-m <matrix-pattern>] [-s <solver-pattern>]" << std::endl;
       return 0;
     } else if (argument == "-m" || argument == "--matrix") {
       if (i + 1 >= argc) {

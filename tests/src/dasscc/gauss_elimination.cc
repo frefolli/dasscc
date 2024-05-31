@@ -4,7 +4,7 @@
 #include <dasscc/testing.hh>
 #include <cassert>
 
-void TestGaussElimination() {
+int main() {
   dasscc::MatrixSpecifier matrix_specifier = {
     .type = dasscc::MatrixSpecifier::Type::SPD,
     .N = dasscc::TESTING_MATRIX_SIZE,
