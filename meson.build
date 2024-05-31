@@ -16,7 +16,7 @@ dasscc = library('dasscc', [
     'src/dasscc/matrix.cc',
     'src/dasscc/testing.cc',
     'src/dasscc/state.cc',
-    'src/dasscc/solver.cc',
+    'src/dasscc/specifiers.cc',
   ], install: true,
   include_directories: ['./include'])
 

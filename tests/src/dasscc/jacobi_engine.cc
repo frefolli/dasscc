@@ -8,6 +8,7 @@
 int main() {
   dasscc::MatrixSpecifier matrix_specifier = {
     .type = dasscc::MatrixSpecifier::Type::RDD,
+    .ID = "",
     .N = dasscc::TESTING_MATRIX_SIZE,
     .density = dasscc::TESTING_MATRIX_DENSITY
   };

@@ -1,5 +1,6 @@
 #ifndef DASSCC_MATRIX_HH
 #define DASSCC_MATRIX_HH
+#include <dasscc/specifiers.hh>
 #include <eigen3/Eigen/Eigen>
 #include <eigen3/Eigen/src/SparseCore/SparseMatrix.h>
 #include <cmath>
@@ -7,18 +8,6 @@
 #include <string>
 /** @file matrix.hh Matrix Utils */
 namespace dasscc {
-  /**
-   * Represents a request of matrix from CLI
-  */
-  struct MatrixSpecifier {
-    enum Type {
-      NONE, SRC, SPD, UT, LT, CDD, RDD
-    } type;
-    std::string ID;
-    uint32_t N;
-    double_t density;
-  };
-
   /**
    * Loads a Sparse Matrix from .mtx file
    * @param matrix output matrix
@@ -92,12 +81,6 @@ namespace dasscc {
    * Set sparse matrix to a NxN identity.
    */
   void Identity(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N);
-
-  /**
-   * Parses a Matrix specifier and returns the requested matrix
-   * @param pattern input pattern
-  */
-  MatrixSpecifier ParseMatrixSpecifier(std::string pattern);
 
   /**
    * Creates a matrix from a pattern of specifier

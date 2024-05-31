@@ -1,16 +1,4 @@
-#include <dasscc/matrix.hh>
-#include <dasscc/logging.hh>
-#include <dasscc/testing.hh>
-#include <dasscc/solver.hh>
-#include <dasscc/jacobi_engine.hh>
-#include <dasscc/richardson_engine.hh>
-#include <dasscc/gauss_seidel_engine.hh>
-#include <dasscc/gradient_engine.hh>
-#include <dasscc/conjugate_gradient_engine.hh>
-#include <dasscc/iterative_solver.hh>
-#include <dasscc/backward_substitution_solver.hh>
-#include <dasscc/forward_substitution_solver.hh>
-#include <dasscc/gauss_elimination_solver.hh>
+#include <dasscc.hh>
 #include <cassert>
 #include <iostream>
 

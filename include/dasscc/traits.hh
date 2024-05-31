@@ -27,5 +27,5 @@ Trait(IterativeEngine,
 ```
 */
 #define ImplTrait(Type, Trait) \
-  static_assert(Trait<Type>::value, #Type " should implement trait " #Trait);
+  static_assert(Trait<Type>::value, #Type " should implement trait " #Trait)
 #endif//DASSCC_TRAITS_HH

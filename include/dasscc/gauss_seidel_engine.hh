@@ -9,13 +9,28 @@ namespace dasscc {
   class GaussSeidelEngine {
     dasscc::ForwardSubstitutionSolver forward_substitution_solver;
     public:
-      /** TODO: */
+      /**
+       * Compute Gauss-Seidel P from A
+       * @param state input state
+      */
       void post_initialize(State& state);
-      /** TODO: */
+      
+      /**
+       * Doesn't do anything
+       * @param state input state
+      */
       void pre_compute_y(State& state);
-      /** TODO: */
+      
+      /**
+       * Compute Py = r_k
+       * @param state input state
+      */
       void compute_y(State& state);
-      /** TODO: */
+      
+      /**
+       * Doesn't do anything
+       * @param state input state
+      */
       void post_compute_x(State& state);
   };
 

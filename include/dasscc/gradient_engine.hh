@@ -7,13 +7,28 @@ namespace dasscc {
   /** trait */
   class GradientEngine {
     public:
-      /** TODO: */
+      /**
+       * Doesn't do anything
+       * @param state input state
+      */
       void post_initialize(State& state);
-      /** TODO: */
+      
+      /**
+       * Compute alpha_k = (r_k.transpose() * r_k)/(r_k.transpose() * A * r_k)
+       * @param state input state
+      */
       void pre_compute_y(State& state);
-      /** TODO: */
+      
+      /**
+       * Compute y = alpha_k * r_k
+       * @param state input state
+      */
       void compute_y(State& state);
-      /** TODO: */
+      
+      /**
+       * Doesn't do anything
+       * @param state input state
+      */
       void post_compute_x(State& state);
   };
 

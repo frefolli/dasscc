@@ -12,7 +12,7 @@ namespace dasscc {
         Eigen::SparseMatrix<double_t, Eigen::RowMajor> &A,
         Eigen::SparseVector<double_t> &b
       );
-      ImplTrait(GaussEliminationSolver, DirectSolver)
+      ImplTrait(GaussEliminationSolver, DirectSolver);
   };
 }
 #endif//DASSCC_GAUSS_ELIMINATION_SOLVER_HH

@@ -17,7 +17,7 @@ clean:
 	rm -rf ${BUILDDIR}
 
 test:
-	meson test
+	meson test -C ${BUILDDIR}
 
 install:
 	mkdir -p ${DESTDIR}/usr/local/lib/
