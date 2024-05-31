@@ -30,7 +30,7 @@ int main(int argc, char** args) {
     }
   }
 
-  dasscc::MatrixSpecifier = dasscc::ParseMatrixSpecifier(matrix_pattern);
+  dasscc::MatrixSpecifier matrix_specifier = dasscc::ParseMatrixSpecifier(matrix_pattern);
   dasscc::LogInfo("matrix.N: " + std::to_string(matrix_specifier.N));
   dasscc::LogInfo("matrix.density: " + std::to_string(matrix_specifier.density));
 
