@@ -213,6 +213,37 @@ bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix
   return true;
 }
 
+inline void _ProcessBuffer(dasscc::MatrixSpecifier& result, bool& already_read_N, std::string& buffer) {
+  switch (result.type) {
+    case dasscc::MatrixSpecifier::Type::NONE: {
+      if (buffer == "src") {
+        result.type = dasscc::MatrixSpecifier::Type::SRC;
+      } else if (buffer == "spd") {
+        result.type = dasscc::MatrixSpecifier::Type::SPD;
+      } else if (buffer == "ut") {
+        result.type = dasscc::MatrixSpecifier::Type::UT;
+      } else if (buffer == "lt") {
+        result.type = dasscc::MatrixSpecifier::Type::LT;
+      } else if (buffer == "cdd") {
+        result.type = dasscc::MatrixSpecifier::Type::CDD;
+      } else if (buffer == "rdd") {
+        result.type = dasscc::MatrixSpecifier::Type::RDD;
+      }
+    }; break;
+    case dasscc::MatrixSpecifier::Type::SRC: {
+      result.ID = buffer;
+    }; break;
+    default: {
+      if (already_read_N) {
+        result.density = std::stod(buffer);
+      } else {
+        result.N = std::stoi(buffer);
+        already_read_N = true;
+      }
+    }; break;
+  }
+}
+
 dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
   dasscc::MatrixSpecifier result = {
     .type = dasscc::MatrixSpecifier::Type::NONE,
@@ -225,39 +256,15 @@ dasscc::MatrixSpecifier dasscc::ParseMatrixSpecifier(std::string pattern) {
   for (char c : pattern) {
     if (c == ':') {
       if (buffer.size() > 0) {
-        switch (result.type) {
-          case dasscc::MatrixSpecifier::Type::NONE: {
-            if (buffer == "src") {
-              result.type = dasscc::MatrixSpecifier::Type::SRC;
-            } else if (buffer == "spd") {
-              result.type = dasscc::MatrixSpecifier::Type::SPD;
-            } else if (buffer == "ut") {
-              result.type = dasscc::MatrixSpecifier::Type::UT;
-            } else if (buffer == "lt") {
-              result.type = dasscc::MatrixSpecifier::Type::LT;
-            } else if (buffer == "cdd") {
-              result.type = dasscc::MatrixSpecifier::Type::CDD;
-            } else if (buffer == "rdd") {
-              result.type = dasscc::MatrixSpecifier::Type::RDD;
-            }
-          }; break;
-          case dasscc::MatrixSpecifier::Type::SRC: {
-            result.ID = buffer;
-          }; break;
-          default: {
-            if (already_read_N) {
-              result.density = std::stod(buffer);
-            } else {
-              result.N = std::stoi(buffer);
-              already_read_N = true;
-            }
-          }; break;
-        }
+        _ProcessBuffer(result, already_read_N, buffer);
         buffer.clear();
       }
     } else {
       buffer += c;
     }
+  }
+  if (buffer.size() > 0) {
+    _ProcessBuffer(result, already_read_N, buffer);
   }
   return result;
 }

@@ -2,6 +2,15 @@
 #include <dasscc/logging.hh>
 #include <dasscc/testing.hh>
 #include <dasscc/solver.hh>
+#include <dasscc/jacobi_engine.hh>
+#include <dasscc/richardson_engine.hh>
+#include <dasscc/gauss_seidel_engine.hh>
+#include <dasscc/gradient_engine.hh>
+#include <dasscc/conjugate_gradient_engine.hh>
+#include <dasscc/iterative_solver.hh>
+#include <dasscc/backward_substitution_solver.hh>
+#include <dasscc/forward_substitution_solver.hh>
+#include <dasscc/gauss_elimination_solver.hh>
 #include <cassert>
 #include <iostream>
 
@@ -45,11 +54,47 @@ int main(int argc, char** args) {
   b = A * xe;
   
   dasscc::SolverSpecifier solver_specifier = dasscc::ParseSolverSpecifier(solver_pattern);
-  dasscc::LogInfo("solver.tol: " + std::to_string(solver_specifier.tol));
+  dasscc::LogInfo("solver.type:    " + dasscc::ToString(solver_specifier.type));
+  dasscc::LogInfo("solver.tol:     " + std::to_string(solver_specifier.tol));
   dasscc::LogInfo("solver.maxIter: " + std::to_string(solver_specifier.maxIter));
-  /*
-  dasscc::IterativeSolver<dasscc::JacobiEngine> solver;
-  dasscc::Result result = solver.run(A, b, 10e-7, 30000);
+
+  dasscc::Result<Eigen::SparseVector<double_t>> result;
+  switch (solver_specifier.type) {
+    case solver_specifier.JA: {
+      dasscc::IterativeSolver<dasscc::JacobiEngine> solver;
+      result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
+    }; break;
+    case solver_specifier.RI: {
+      dasscc::IterativeSolver<dasscc::RichardsonEngine> solver;
+      result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
+    }; break;
+    case solver_specifier.GS: {
+      dasscc::IterativeSolver<dasscc::GaussSeidelEngine> solver;
+      result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
+    }; break;
+    case solver_specifier.GR: {
+      dasscc::IterativeSolver<dasscc::GradientEngine> solver;
+      result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
+    }; break;
+    case solver_specifier.CG: {
+      dasscc::IterativeSolver<dasscc::ConjugateGradientEngine> solver;
+      result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
+    }; break;
+    case solver_specifier.BS: {
+      dasscc::BackwardSubstitutionSolver solver;
+      result = solver.run(A, b);
+    }; break;
+    case solver_specifier.FS: {
+      dasscc::ForwardSubstitutionSolver solver;
+      result = solver.run(A, b);
+    }; break;
+    case solver_specifier.GE: {
+      dasscc::GaussEliminationSolver solver;
+      result = solver.run(A, b);
+    }; break;
+    case solver_specifier.NONE: {
+    }; break;
+  }
   assert(result.type == result.OK);
 
   dasscc::Comparison comparison = dasscc::CompareVectors(xe, result.data);
@@ -58,6 +103,6 @@ int main(int argc, char** args) {
   std::cout << "min_cwise_diff := " << comparison.min_cwise_diff << std::endl;
   std::cout << "max_cwise_diff := " << comparison.max_cwise_diff << std::endl;
   std::cout << "norm_of_diff := " << comparison.norm_of_diff << std::endl;
-  */
+
   return 0;
 }
