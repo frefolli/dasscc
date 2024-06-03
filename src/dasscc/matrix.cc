@@ -218,7 +218,7 @@ bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>&
   return dasscc::FromMatrixSpecifier(matrix, specifier);
 }
   
-bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, dasscc::MatrixSpecifier& specifier) {
+bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const dasscc::MatrixSpecifier& specifier) {
   bool success = true;
   switch (specifier.type) {
     case dasscc::MatrixSpecifier::Type::SPD: {

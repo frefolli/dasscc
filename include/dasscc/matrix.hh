@@ -94,6 +94,6 @@ namespace dasscc {
    * @param matrix output matrix
    * @param specifier input specifier
   */
-  bool FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, MatrixSpecifier& specifier);
+  bool FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const MatrixSpecifier& specifier);
 };
 #endif//DASSCC_MATRIX_HH

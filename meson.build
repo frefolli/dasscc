@@ -3,6 +3,9 @@ project('dasscc', 'cpp',
   default_options : ['warning_level=3',
                      'cpp_std=c++20'])
 
+eigen3 = dependency('eigen3')
+jsoncpp = dependency('jsoncpp')
+
 dasscc = library('dasscc', [
     'src/dasscc/backward_substitution_solver.cc',
     'src/dasscc/forward_substitution_solver.cc',
@@ -17,8 +20,11 @@ dasscc = library('dasscc', [
     'src/dasscc/testing.cc',
     'src/dasscc/state.cc',
     'src/dasscc/specifiers.cc',
+    'src/dasscc/timer.cc',
+    'src/dasscc/benchmark.cc',
   ], install: true,
-  include_directories: ['./include'])
+  include_directories: ['./include'],
+  dependencies: [eigen3, jsoncpp])
 
 test_conjugate_gradient_engine = executable('test_conjugate_gradient_engine', [
     'tests/src/dasscc/conjugate_gradient_engine.cc',

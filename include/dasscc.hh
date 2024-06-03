@@ -19,4 +19,5 @@
 #include <dasscc/specifiers.hh>
 #include <dasscc/state.hh>
 #include <dasscc/testing.hh>
+#include <dasscc/benchmark.hh>
 #endif//DASSCC_HH

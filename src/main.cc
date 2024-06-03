@@ -4,12 +4,18 @@
 
 const std::string DEFAULT_MATRIX_PATTERN = "rdd:50:0.05";
 const std::string DEFAULT_SOLVER_PATTERN = "ja:10e-7:30000";
+const std::string DEFAULT_BENCHMARK_FILEPATH = "benchmark.json";
+const std::string DEFAULT_REPORT_FILEPATH = "report.json";
 
 struct CliConfig {
   std::string matrix_pattern = DEFAULT_MATRIX_PATTERN;
   std::string solver_pattern = DEFAULT_SOLVER_PATTERN;
+  std::string benchmark_filepath = DEFAULT_BENCHMARK_FILEPATH;
+  std::string report_filepath = DEFAULT_REPORT_FILEPATH;
   bool dry_run = false;
   bool verbose = false;
+  bool solve = false;
+  bool benchmark = false;
 };
 
 inline void PrintHelp(std::string executable) {
@@ -17,10 +23,20 @@ inline void PrintHelp(std::string executable) {
   std::cerr << "Options:" << std::endl;
   std::cerr << "  -m/--matrix <matrix-pattern>          Expects a Matrix Specifer of form `src:<path>` or `<class>[:N[:density]]`" << std::endl;
   std::cerr << "  -s/--solver <solver-pattern>          Expects a Solver Specifer of form `<class>[:tol[:maxIter]]`" << std::endl;
+  std::cerr << "  -r/--report <report-filepath>         Expects a json Report filepath" << std::endl;
+  std::cerr << "  -b/--benchmark <benchmark-filepath>   Expects a json Benchmark filepath" << std::endl;
   std::cerr << "  -d/--dry-run                          Exit after parsing specifiers" << std::endl;
+  std::cerr << "  -v/--verbose                          Verbose log" << std::endl;
   std::cerr << std::endl;
-  std::cerr << "Default <matrix-pattern> is `" << DEFAULT_MATRIX_PATTERN << "`" << std::endl;
-  std::cerr << "Default <solver-pattern> is `" << DEFAULT_SOLVER_PATTERN << "`" << std::endl;
+  std::cerr << "Actions:" << std::endl;
+  std::cerr << "  -B/--do-benchmark                     Run a benchmark of Iterative Solvers" << std::endl;
+  std::cerr << "  -S/--do-solve                         Run a Solver against a Matrix" << std::endl;
+  std::cerr << std::endl;
+  std::cerr << "Default settings:" << std::endl;
+  std::cerr << "  <matrix-pattern>                      `" << DEFAULT_MATRIX_PATTERN << "`" << std::endl;
+  std::cerr << "  <solver-pattern>                      `" << DEFAULT_SOLVER_PATTERN << "`" << std::endl;
+  std::cerr << "  <benchmark-filepath>                  `" << DEFAULT_BENCHMARK_FILEPATH << "`" << std::endl;
+  std::cerr << "  <report-filepath>                     `" << DEFAULT_REPORT_FILEPATH << "`" << std::endl;
   exit(0);
 }
 
@@ -41,6 +57,22 @@ inline void ParseArguments(int argc, char** args, CliConfig& cli_config) {
       }
       argument = args[++i];
       cli_config.solver_pattern = argument;
+    } else if (argument == "-r" || argument == "--report") {
+      if (i + 1 >= argc) {
+        dasscc::RaiseFatalError("expected report-filepath after " + argument);
+      }
+      argument = args[++i];
+      cli_config.report_filepath = argument;
+    } else if (argument == "-b" || argument == "--benchmark") {
+      if (i + 1 >= argc) {
+        dasscc::RaiseFatalError("expected benchmark-filepath after " + argument);
+      }
+      argument = args[++i];
+      cli_config.benchmark_filepath = argument;
+    } else if (argument == "-B" || argument == "--do-benchmark") {
+      cli_config.benchmark = true;
+    } else if (argument == "-S" || argument == "--do-solve") {
+      cli_config.solve = true;
     } else if (argument == "-d" || argument == "--dry-run") {
       cli_config.dry_run = true;
     } else if (argument == "-v" || argument == "--verbose") {
@@ -54,47 +86,44 @@ inline void UseSpecifierSolver(dasscc::Result<Eigen::SparseVector<double_t>>& re
                                Eigen::SparseMatrix<double_t, Eigen::RowMajor>& A,
                                Eigen::SparseVector<double_t>& b) {
   switch (solver_specifier.type) {
-    case solver_specifier.JA: {
+    case dasscc::SolverSpecifier::Type::JA: {
       dasscc::IterativeSolver<dasscc::JacobiEngine> solver;
       result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
     }; break;
-    case solver_specifier.RI: {
+    case dasscc::SolverSpecifier::Type::RI: {
       dasscc::IterativeSolver<dasscc::RichardsonEngine> solver;
       result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
     }; break;
-    case solver_specifier.GS: {
+    case dasscc::SolverSpecifier::Type::GS: {
       dasscc::IterativeSolver<dasscc::GaussSeidelEngine> solver;
       result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
     }; break;
-    case solver_specifier.GR: {
+    case dasscc::SolverSpecifier::Type::GR: {
       dasscc::IterativeSolver<dasscc::GradientEngine> solver;
       result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
     }; break;
-    case solver_specifier.CG: {
+    case dasscc::SolverSpecifier::Type::CG: {
       dasscc::IterativeSolver<dasscc::ConjugateGradientEngine> solver;
       result = solver.run(A, b, solver_specifier.tol, solver_specifier.maxIter);
     }; break;
-    case solver_specifier.BS: {
+    case dasscc::SolverSpecifier::Type::BS: {
       dasscc::BackwardSubstitutionSolver solver;
       result = solver.run(A, b);
     }; break;
-    case solver_specifier.FS: {
+    case dasscc::SolverSpecifier::Type::FS: {
       dasscc::ForwardSubstitutionSolver solver;
       result = solver.run(A, b);
     }; break;
-    case solver_specifier.GE: {
+    case dasscc::SolverSpecifier::Type::GE: {
       dasscc::GaussEliminationSolver solver;
       result = solver.run(A, b);
     }; break;
-    case solver_specifier.NONE: {
+    case dasscc::SolverSpecifier::Type::NONE: {
     }; break;
   }
 }
 
-int main(int argc, char** args) {
-  CliConfig cli_config;
-  ParseArguments(argc, args, cli_config);
-
+int DoSolve(CliConfig& cli_config) {
   dasscc::MatrixSpecifier matrix_specifier = dasscc::ParseMatrixSpecifier(cli_config.matrix_pattern);
   if (cli_config.verbose) {
     dasscc::LogInfo("matrix.type:    " + dasscc::ToString(matrix_specifier.type));
@@ -132,6 +161,46 @@ int main(int argc, char** args) {
   std::cout << "min_cwise_diff := " << comparison.min_cwise_diff << std::endl;
   std::cout << "max_cwise_diff := " << comparison.max_cwise_diff << std::endl;
   std::cout << "norm_of_diff := " << comparison.norm_of_diff << std::endl;
+
+  return 0;
+}
+
+int DoBenchmark(CliConfig& cli_config) {
+  dasscc::Report report;
+  // If doesn't exist, it will create it
+  if (!dasscc::LoadReport(report, cli_config.report_filepath)) {
+    dasscc::LogInfo("file " + cli_config.report_filepath + " doesn't exist, creating it");
+    report.data.clear();
+    report.filepath = cli_config.report_filepath;
+  }
+
+  dasscc::Benchmark benchmark;
+  if (!dasscc::LoadBenchmark(benchmark, cli_config.benchmark_filepath)) {
+    dasscc::LogInfo("file " + cli_config.benchmark_filepath + " doesn't exist, defaulting and creating it");
+    benchmark = {
+      .matrix_patterns = {"rdd:50:0.05"},
+      .tols = {10e-6, 10e-7}
+    };
+    dasscc::DumpBenchmark(benchmark, cli_config.benchmark_filepath);
+  }
+
+  if (cli_config.dry_run)
+    return 0;
+
+  dasscc::ExecuteBenchmark(report, benchmark);
+  dasscc::DumpReport(report);
+  return 0;
+}
+
+int main(int argc, char** args) {
+  CliConfig cli_config;
+  ParseArguments(argc, args, cli_config);
+
+  if (cli_config.benchmark) {
+    DoBenchmark(cli_config);
+  } else if (cli_config.solve) {
+    DoSolve(cli_config);
+  }
 
   return 0;
 }
