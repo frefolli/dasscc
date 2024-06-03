@@ -7,18 +7,33 @@
 #include <cstdint>
 #include <cmath>
 #include <dasscc/specifiers.hh>
+#include <Eigen/Sparse>
 
 namespace dasscc {
+  /** Represents a benchmark'in report */
   struct Report {
+    /** Represents an entry of a report section */
     struct Cell {
       dasscc::MatrixSpecifier::Type type;
       std::string ID;
       uint32_t N;
+      uint32_t M;
       double_t density;
       double_t tol;
       double_t elapsed;
       bool converged;
       double_t error;
+
+      /** Cell key comprises infos about benchmark, not the results */
+      std::string toKey() const;
+
+      /** Collects info about benchmark */
+      void includeInfo(const dasscc::MatrixSpecifier& matrix_specifier,
+                       const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& benchmark_matrix,
+                       double_t tol);
+
+      /** Compares infos about benchmark, not the results */
+      bool operator==(const Cell& other) const;
     };
 
     std::string filepath;

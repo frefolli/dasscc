@@ -18,8 +18,39 @@
 #include <fstream>
 #include <cxxabi.h>
 #include <json/value.h>
+#include <sstream>
 #include <string>
 #include <cassert>
+
+std::string dasscc::Report::Cell::toKey() const {
+  std::ostringstream out;
+  out << dasscc::ToString(type);
+  if (type == dasscc::MatrixSpecifier::Type::SRC) {
+    out << ":" << ID;
+  };
+  out << ":" << N << ":" << M << ":" << density << ":" << tol;
+  return out.str();
+}
+
+void dasscc::Report::Cell::includeInfo(const dasscc::MatrixSpecifier& matrix_specifier,
+                                       const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& benchmark_matrix,
+                                       double_t _tol) {
+  type = matrix_specifier.type;
+  ID = matrix_specifier.ID;
+  N = benchmark_matrix.rows();
+  M = benchmark_matrix.cols();
+  density = (double_t)benchmark_matrix.nonZeros() / (N * M);
+  tol = _tol;
+}
+
+bool dasscc::Report::Cell::operator==(const Cell& other) const {
+  return (type == other.type)
+      && (ID == other.ID)
+      && (density == other.density)
+      && (N == other.N)
+      && (M == other.M)
+      && (tol == other.tol);
+}
 
 bool dasscc::LoadReport(dasscc::Report& report, const std::string& filepath) {
   if (!std::filesystem::exists(filepath)) {
@@ -62,6 +93,7 @@ bool dasscc::LoadReport(dasscc::Report& report, const std::string& filepath) {
         .type = (dasscc::MatrixSpecifier::Type) cell->operator[]("type").asUInt(),
         .ID = cell->operator[]("ID").asString(),
         .N = cell->operator[]("N").asUInt(),
+        .M = cell->operator[]("M").asUInt(),
         .density = cell->operator[]("density").asDouble(),
         .tol = cell->operator[]("tol").asDouble(),
         .elapsed = cell->operator[]("elapsed").asDouble(),
@@ -83,6 +115,7 @@ bool dasscc::DumpReport(const dasscc::Report& report) {
       record["type"] = cell.type;
       record["ID"] = cell.ID;
       record["N"] = cell.N;
+      record["M"] = cell.M;
       record["density"] = cell.density;
       record["tol"] = cell.tol;
       record["elapsed"] = cell.elapsed;
@@ -200,26 +233,19 @@ inline void RunIfNotAlready(dasscc::Report& report, const dasscc::MatrixSpecifie
   ImplTrait(Engine, dasscc::IterativeEngine);
   std::string label = abi::__cxa_demangle(typeid(Engine).name(), nullptr, nullptr, nullptr);
   std::vector<dasscc::Report::Cell>& cells = report.data[label];
+  Eigen::SparseMatrix<double_t, Eigen::RowMajor> benchmark_matrix;
+  assert(dasscc::FromMatrixSpecifier(benchmark_matrix, matrix_specifier));
   dasscc::Report::Cell cell;
-  cell.type = matrix_specifier.type;
-  cell.ID = matrix_specifier.ID;
-  cell.density = matrix_specifier.density;
-  cell.N = matrix_specifier.N;
-  cell.tol = tol;
+  cell.includeInfo(matrix_specifier, benchmark_matrix, tol);
 
-  auto it = std::find_if(cells.begin(), cells.end(), [&cell](const dasscc::Report::Cell& existing_cell) {
-    return (cell.type == existing_cell.type)
-        && (cell.ID == existing_cell.ID)
-        && (cell.density == existing_cell.density)
-        && (cell.N == existing_cell.N)
-        && (cell.tol == existing_cell.tol);
-  });
+  auto it = std::find(cells.begin(), cells.end(), cell);
   if (it == cells.end()) {
-    Eigen::SparseMatrix<double_t, Eigen::RowMajor> benchmark_matrix;
-    assert(dasscc::FromMatrixSpecifier(benchmark_matrix, matrix_specifier));
+    dasscc::LogInfo("Executing " + cell.toKey() + " for " + label);
     RunAgainstMatrix<Engine>(cell, benchmark_matrix, tol);
+    dasscc::LogInfo("Executed  " + cell.toKey() + " for " + label);
     cells.push_back(cell);
   } else {
+    dasscc::LogInfo("Skipping  " + cell.toKey() + " for " + label);
   }
 }
 
@@ -229,7 +255,7 @@ void dasscc::ExecuteBenchmark(dasscc::Report& report, const dasscc::Benchmark& b
     for (double_t tol : benchmark.tols) {
       RunIfNotAlready<dasscc::JacobiEngine>(report, matrix_specifier, tol);
       RunIfNotAlready<dasscc::GaussSeidelEngine>(report, matrix_specifier, tol);
-      RunIfNotAlready<dasscc::RichardsonEngine>(report, matrix_specifier, tol);
+      // RunIfNotAlready<dasscc::RichardsonEngine>(report, matrix_specifier, tol);
       RunIfNotAlready<dasscc::GradientEngine>(report, matrix_specifier, tol);
       RunIfNotAlready<dasscc::ConjugateGradientEngine>(report, matrix_specifier, tol);
     }

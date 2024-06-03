@@ -1,3 +1,4 @@
 builddir
 __pycache__
 *.json
+*.png
