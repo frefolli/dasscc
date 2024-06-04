@@ -1,12 +1,18 @@
 #ifndef DASSCC_ITERATIVE_SOLVER_HH
 #define DASSCC_ITERATIVE_SOLVER_HH
+/** @file */
 #include <dasscc/indirect_solver.hh>
 #include <dasscc/iterative_engine.hh>
 #include <dasscc/matrix.hh>
 #include <dasscc/logging.hh>
 #include <dasscc/flags.hh>
-#include <iostream>
-/** @file */
+
+#ifdef DEBUG
+#include <fstream>
+#include <string>
+#include <filesystem>
+#endif
+
 namespace dasscc {
   template<typename Engine>
   class IterativeSolver {
@@ -19,6 +25,15 @@ namespace dasscc {
                                                 Eigen::SparseVector<double_t> &b,
                                                 double_t tol,
                                                 uint32_t maxIter) {
+        #ifdef DEBUG
+        std::string logdir = "/tmp/dasscc";
+        std::filesystem::create_directories(logdir);
+        std::string logfile = logdir + "/" + typeid(Engine).name();
+        std::ofstream out;
+        out.open(logfile);
+        out << "Iteration,NormalizedResidual" << std::endl;
+        #endif
+        
         dasscc::State state;
         // Load Input
         state.A = A;
@@ -35,46 +50,32 @@ namespace dasscc {
 
         for (uint32_t k = 1; k <= maxIter; ++k) {
           // Check Tol
+          double_t normalized_residual = state.r_k.norm() / norm_of_b;
           #ifdef DEBUG
-          LogInfo("Checking Norm");
+          out << k << "," << normalized_residual << std::endl;
           #endif
-          if (state.r_k.norm() / norm_of_b < tol)
+          if (normalized_residual < tol) {
+            #ifdef DEBUG
+            out.close();
+            #endif
             return dasscc::Result<Eigen::SparseVector<double_t>>::Ok(state.x_k);
+          }
 
           // Compute Y
-          #ifdef DEBUG
-          LogInfo("Pre Compute Y");
-          #endif
           engine.pre_compute_y(state);
-
-          #ifdef DEBUG
-          LogInfo("Compute Y");
-          #endif
           engine.compute_y(state);
-          
-          #ifdef LOGGING
-          std::cout << state.y.norm() << std::endl;
-          #endif
 
-          // Compute X
-          #ifdef DEBUG
-          LogInfo("Compute x_n");
-          #endif
+          // Compute Xn
           state.x_n = state.x_k + state.y;
-          
-          #ifdef DEBUG
-          LogInfo("Compute r_n");
-          #endif
           state.r_n = state.b - (state.A * state.x_n);
-          
-          #ifdef DEBUG
-          LogInfo("Post Compute X");
-          #endif
           engine.post_compute_x(state);
 
           // End of Iteration
           state.update();
         } 
+        #ifdef DEBUG
+        out.close();
+        #endif
         return dasscc::Result<Eigen::SparseVector<double_t>>::Err();
       }
       ImplTrait(IterativeSolver<Engine>, IndirectSolver);
