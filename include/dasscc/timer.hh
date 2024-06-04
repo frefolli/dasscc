@@ -10,6 +10,8 @@ namespace dasscc {
     void reset();
     void round(std::string info);
     double_t round();
+    void progress(std::string info);
+    double_t progress();
   };
 }
 #endif//DASSCC_TIMER_HH

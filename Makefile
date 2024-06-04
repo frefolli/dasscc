@@ -11,7 +11,7 @@ ${BUILDDIR}: ${MESON_CONF}
 	meson setup --buildtype=${BUILD_TYPE} ${BUILDDIR}
 
 ${LIB}: ${BUILDDIR} ${SRC} ${INCLUDE}
-	ninja -j 0 -C ${BUILDDIR}
+	ninja -C ${BUILDDIR}
 
 clean:
 	rm -rf ${BUILDDIR}
@@ -29,6 +29,9 @@ install:
 
 run:
 	./builddir/main.exe
+
+produce:
+	./produce.sh
 
 docs:
 	make -C ./doc

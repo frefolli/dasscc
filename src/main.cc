@@ -37,6 +37,16 @@ inline void PrintHelp(std::string executable) {
   std::cerr << "  <solver-pattern>                      `" << DEFAULT_SOLVER_PATTERN << "`" << std::endl;
   std::cerr << "  <benchmark-filepath>                  `" << DEFAULT_BENCHMARK_FILEPATH << "`" << std::endl;
   std::cerr << "  <report-filepath>                     `" << DEFAULT_REPORT_FILEPATH << "`" << std::endl;
+  std::cerr << std::endl;
+  std::cerr << "Possible solvers:" << std::endl;
+  std::cerr << "  - bs                                  Backward Substitution for Upper Triangular Matrices" << std::endl;
+  std::cerr << "  - fs                                  Forward Substitution for Lower Triangular Matrices" << std::endl;
+  std::cerr << "  - ge                                  Gauss Elimination" << std::endl;
+  std::cerr << "  - ja                                  Jacobi's Iterative Method for Diagonal Dominant Matrices" << std::endl;
+  std::cerr << "  - gs                                  Gauss-Seidel's Iterative Method for Diagonal Dominant Matrices" << std::endl;
+  std::cerr << "  - ri                                  Richardson's Iterative Method for Diagonal Dominant Matrices" << std::endl;
+  std::cerr << "  - gr                                  Gradient's Iterative Method for Symmetric and Positive Defined Matrices" << std::endl;
+  std::cerr << "  - cg                                  Conjugate Gradient's Iterative Method for Symmetric and Positive Defined Matrices" << std::endl;
   exit(0);
 }
 

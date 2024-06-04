@@ -11,6 +11,7 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
+#include <dasscc/timer.hh>
 #endif
 
 namespace dasscc {
@@ -26,12 +27,14 @@ namespace dasscc {
                                                 double_t tol,
                                                 uint32_t maxIter) {
         #ifdef DEBUG
-        std::string logdir = "/tmp/dasscc";
+        std::string logdir = "/tmp/dasscc/logs";
         std::filesystem::create_directories(logdir);
-        std::string logfile = logdir + "/" + typeid(Engine).name();
+        std::string logfile = logdir + "/" + typeid(Engine).name() + ".csv";
         std::ofstream out;
         out.open(logfile);
-        out << "Iteration,NormalizedResidual" << std::endl;
+        out << "Iteration,NormalizedResidual,TotalElapsed" << std::endl;
+        Timer timer;
+        timer.reset();
         #endif
         
         dasscc::State state;
@@ -52,7 +55,7 @@ namespace dasscc {
           // Check Tol
           double_t normalized_residual = state.r_k.norm() / norm_of_b;
           #ifdef DEBUG
-          out << k << "," << normalized_residual << std::endl;
+          out << k << "," << normalized_residual << "," << timer.progress() << std::endl;
           #endif
           if (normalized_residual < tol) {
             #ifdef DEBUG

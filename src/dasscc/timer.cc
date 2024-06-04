@@ -18,3 +18,15 @@ double_t dasscc::Timer::round() {
   internal_clock = now;
   return timediff;
 }
+
+void dasscc::Timer::progress(std::string info) {
+  decltype(internal_clock) now = std::chrono::utc_clock::now();
+  double_t timediff = std::chrono::duration<double_t>(now - internal_clock).count();
+  dasscc::LogInfo("Timer | " + info + " | Total Elapsed " + std::to_string(timediff) + "s");
+}
+
+double_t dasscc::Timer::progress() {
+  decltype(internal_clock) now = std::chrono::utc_clock::now();
+  double_t timediff = std::chrono::duration<double_t>(now - internal_clock).count();
+  return timediff;
+}
