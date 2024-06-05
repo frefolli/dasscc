@@ -7,8 +7,10 @@ from pesto.crafters import PerSolverDataCrafter, PerMatrixDataCrafter
 
 def do_plot(config: argparse.Namespace) -> None:
   log = DassLogLoader.run(path=config.logpath)
-  FunctionalPlotter.run(log=log, crafter=PerSolverDataCrafter, x='Iteration', y='NormalizedResidual')
-  FunctionalPlotter.run(log=log, crafter=PerMatrixDataCrafter, x='Iteration', y='NormalizedResidual')
+  #x = 'Iteration'
+  x = 'TotalElapsed'
+  FunctionalPlotter.run(log=log, crafter=PerSolverDataCrafter, x=x, y='NormalizedResidual')
+  FunctionalPlotter.run(log=log, crafter=PerMatrixDataCrafter, x=x, y='NormalizedResidual')
 
 if __name__ == "__main__":
   action_map: dict[str, typing.Callable[[argparse.Namespace], None]] = {
