@@ -1,0 +1,184 @@
+\documentclass[a4paper,11pt,oneside, table]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage{setspace}
+\usepackage{imakeidx}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage{pdfpages}
+\usepackage{csquotes}
+\usepackage{caption}
+\captionsetup[table]{labelfont=it}
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+\usepackage{listings}
+\usepackage{listings-cpp}
+
+\newtheorem{nota}{Nota}
+
+\usepackage[italian]{babel}
+\usepackage[
+  backend=bibtex,
+  style=numeric,
+  sorting=ydnt
+  ]{biblatex}
+\addbibresource{quotes.bib}
+\makeindex
+
+\newcommand{\putimage}[3] {
+	\begin{figure}[H]
+	    \centering
+	    \includegraphics[width=0.70\linewidth]{#1}
+	    \caption{#2}\label{#3}
+	\end{figure}
+}
+
+\newcommand{\putimagebig}[3] {
+	\begin{figure}[H]
+	    \centering
+	    \includegraphics[width=0.99\linewidth]{#1}
+	    \caption{#2}\label{#3}
+	\end{figure}
+}
+
+\begin{document}
+    \begin{titlepage}
+        \noindent
+        \begin{minipage}[t]{0.19\textwidth}
+            \vspace{-4mm}{\includegraphics[scale=1.15]{logo_unimib.pdf}}
+        \end{minipage}
+        \begin{minipage}[t]{0.81\textwidth}
+        {
+                \setstretch{1.42}
+                {\textsc{Università degli Studi di Milano - Bicocca}} \\
+                \textbf{Scuola di Scienze} \\
+                \textbf{Dipartimento di Informatica, Sistemistica e Comunicazione} \\
+                \textbf{Corso di laurea magistrale in Informatica} \\
+                \par
+        }
+        \end{minipage}
+    	\vspace{40mm}
+    	\begin{center}
+            {\LARGE{
+                    \setstretch{1.2}
+                    \textbf{Relazione di Metodi del Calcolo Scientifico - Progetto 1 Bis}
+                    \par
+            }}
+        \end{center}
+        
+        \vspace{50mm}
+        
+        \vspace{15mm}
+
+        \begin{flushright}
+            {\large \textbf{Relazione di:}} \\
+            \large{Refolli Francesco}
+            \large{865955}
+        \end{flushright}
+        
+        \vspace{40mm}
+        \begin{center}
+            {\large{\bf Anno Accademico 2023-2024}}
+        \end{center}
+        \restoregeometry
+    \end{titlepage}
+
+    \printindex
+    \tableofcontents
+    \renewcommand{\baselinestretch}{1.5}
+
+\section{Introduzione}
+
+Lo scopo del progetto \`e realizzare una libreria per la risoluzione di matrici sparse simmetriche e definite positive utilizzando i seguenti metodi iterativi:
+
+\begin{itemize}
+    \item metodo di Jacobi
+    \item metodo di Gauss-Seidel
+    \item metodo del Gradiente
+    \item metodo del Gradiente coniugato
+\end{itemize}
+
+I metodi implementati partono dal vettore iniziale nullo e si arrestano qualora la k-esima iterata $x^{(k)}$ soddisfi $\frac{\parallel Ax^{(k)}-b \parallel} {\parallel b \parallel} < tol$ , con \textit{tol} tolleranza assegnata dal utente. Oltre a questo controllo sulla soluzione $x^{(k)}$, i metodi iterativi tengono in considerazione un numero massimo di iterazioni al limite del quale si arrestano e segnalano di non essere giunti a convergenza. Il numero massimo di iterazioni scelto \`e $maxIter = 30000$.
+
+\paragraph{Tecnologie utilizzate}
+
+Per l'implementazione si \`e scelto di sviluppare la libreria in C++ con Eigen, una nota libreria Free and Open Source per la gestione di  matrici dense e sparse. Per verificare la qualit\`a delle implementazioni dei metodi sono stati costruiti dei test basati sui requisiti di convergenza dei metodi stesso (matrici a dominanza diagonale o simmetriche e definite positive).
+
+\section{Architettura della libreria}
+
+In generale tutti i metodi iterativi oggetto di questo progetto hanno la medesima struttura, per questa ragione si \`e deciso di strutturare la libreria in modo da avere un oggetto che si occupa dell'algoritmo generale e vari oggetti che implementano fasi specifiche dei singoli metodi iterativi. Siccome Gauss-Seidel richiede anche un solutore di matrici triangolari si \`e implementato anche quello da zero con Eigen.
+
+\putimagebig{images/diagram.png}{Diagramma di Strutture e Tratti d'Interesse}{png:diagram_of_structures}
+
+\`E stato definito un \textbf{tratto} per un entit\`a \textbf{Engine} che pu\`o essere utilizzato dal risolutore \textbf{IterativeSolver} per espletare una risoluzione iterativa generica. Gli \textbf{Engine} manipolano uno \textbf{State} interno al risolutore per implementare le loro specificit\`a. I risolutori ritornano una monade \textbf{Result} che permette di indicare se la computazione \`e andata a buon fine (i.e. se il limite di iterazioni non \`e stato superato). Questo ha un duplice scopo: tracciare l'informazione banale della convergenza e permettere all'engine che esercita le funzioni del metodo di Gauss Seidel di imporre un'asserzione sul successo della risoluzione del sistema triangolare associato.
+
+\begin{lstlisting}[language=C++]
+Result<Vector> IterativeSolver::run(Matrix &A, Vector &b,
+                                    double_t tol, uint32_t maxIter) {
+  State state;
+  // Load Input
+  state.A = A;
+  state.b = b;
+
+  // Precompute norm of b
+  double_t norm_of_b = state.b.norm();
+
+  // Initialize
+  const uint32_t N = A.cols();
+  ArrayOfZeros(state.x_k, N);
+  state.r_k = state.b - state.A * state.x_k;
+  engine.post_initialize(state);
+
+  for (uint32_t k = 1; k <= maxIter; ++k) {
+    // Check Tolerance
+    double_t normalized_residual = state.r_k.norm() / norm_of_b;
+    if (normalized_residual < tol) {
+      return Result<Vector>::Ok(state.x_k);
+    }
+
+    // Compute Y
+    engine.pre_compute_y(state);
+    engine.compute_y(state);
+
+    // Compute Xn
+    state.x_n = state.x_k + state.y;
+    state.r_n = state.b - (state.A * state.x_n);
+    engine.post_compute_x(state);
+
+    // End of Iteration
+    state.update();
+  } 
+  return Result<Vector>::Err();
+}
+\end{lstlisting}
+
+\begin{nota}
+L'istruzione \textit{state.update()} implementa il passaggio di iterazione, cosicch\`e si possa evitare di scrivere esplicitamente per ogni valore di iterata $x_k = x_n$ (dove chiaramente $n = k+1$). In Python ed altri linguaggi questo pu\`o essere fatto tramite la metaprogrammazione, in C++ si \`e fatto uso delle macro per semplificare questo passaggio all'interno di \textit{State}:
+
+
+\begin{lstlisting}[language=C++]
+#define AssignKToNAndCleanN(what) \
+  what##_k = std::move(what##_n); \
+  what##_n.resize(1, 1); \
+  what##_n.data().squeeze()
+\end{lstlisting}
+\end{nota}
+
+\section{Benchmark}
+
+\subsection{Matrici Allegate}
+
+Sono state effettuate delle esecuzioni al variare della tolleranza, del metodo di risoluzione e della matrice di base $A$ (il problema \`e generato prendendo $x_e$ = $<1,.., 1>$ e quindi $b = Ax_e$) scelta tra le quattro matrici allegate al testo della consegna.
+
+\subsection{Test di Scalabilit\`a}
+
+Per ogni metodo di risoluzione sono state generare randomicamente delle matrici di base $A$ di dimensione variabile ($100 \rightarrow 10000$) con il requisito che soddisfino il criterio di convergenza e si sono annotati i tempi di esecuzione per valutarne l'andamento all'aumentare della dimensione della matrice di input.
+
+\subsection{Tenere d'Occhio il Condizionamento}
+
+Sono stati eseguiti vari test senza variare la dimensione della matrice ed annotando il condizionamento per vedere come si comportano i metodi al variare di esso.
+
+\printbibliography[title={Bibliografia}]
+\end{document}
