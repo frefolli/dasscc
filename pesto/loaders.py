@@ -1,8 +1,11 @@
 """
 Service Loaders
 """
+import io
 import pesto.generics
 import pesto.logs
+import scipy.io
+import scipy.sparse
 import yaml
 import pandas
 import json
@@ -62,3 +65,9 @@ class DassLogLoader(pesto.generics.ServiceObject[pesto.logs.DassLog]):
       log = MatrixLogLoader.run(path=logpath)
       logs[log.matrix] = log
     return pesto.logs.DassLog(logs=logs)
+
+class MatrixMarketLoader(pesto.generics.ServiceObject[scipy.sparse.coo_matrix]):
+  def exec(self) -> scipy.sparse.coo_matrix:
+    self.path: str
+    with open(self.path) as file:
+      return scipy.io.mmread(io.StringIO("%%MatrixMarket matrix coordinate real general\n" + file.read()))

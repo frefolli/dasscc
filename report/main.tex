@@ -24,23 +24,45 @@
   style=numeric,
   sorting=ydnt
   ]{biblatex}
-\addbibresource{quotes.bib}
+\addbibresource{refs.bib}
 \makeindex
 
-\newcommand{\putimage}[3] {
+\newcommand{\putimage}[4] {
 	\begin{figure}[H]
 	    \centering
-	    \includegraphics[width=0.70\linewidth]{#1}
+	    \includegraphics[width={#4}\linewidth]{#1}
 	    \caption{#2}\label{#3}
 	\end{figure}
 }
 
-\newcommand{\putimagebig}[3] {
-	\begin{figure}[H]
+\newcommand{\putsubimage}[5] {
+  \begin{minipage}{{#4}\linewidth}
 	    \centering
-	    \includegraphics[width=0.99\linewidth]{#1}
+      \includegraphics[width={#5}\linewidth]{#1}
 	    \caption{#2}\label{#3}
-	\end{figure}
+	\end{minipage}
+}
+
+\newcommand{\putimagecouple}[2] {
+  \begin{figure}[!htb]
+      \centering
+      #1
+      \hspace{0.5cm}
+      #2
+  \end{figure}
+}
+
+\newcommand{\putimagequadruple}[4] {
+  \begin{figure}[!htb]
+      \centering
+      #1
+      \hspace{0.5cm}
+      #2
+      \linebreak
+      #3
+      \hspace{0.5cm}
+      #4
+  \end{figure}
 }
 
 \begin{document}
@@ -110,7 +132,7 @@ Per l'implementazione si \`e scelto di sviluppare la libreria in C++ con Eigen, 
 
 In generale tutti i metodi iterativi oggetto di questo progetto hanno la medesima struttura, per questa ragione si \`e deciso di strutturare la libreria in modo da avere un oggetto che si occupa dell'algoritmo generale e vari oggetti che implementano fasi specifiche dei singoli metodi iterativi. Siccome Gauss-Seidel richiede anche un solutore di matrici triangolari si \`e implementato anche quello da zero con Eigen.
 
-\putimagebig{images/diagram.png}{Diagramma di Strutture e Tratti d'Interesse}{png:diagram_of_structures}
+\putimage{images/diagram.png}{Diagramma di Strutture e Tratti d'Interesse}{png:diagram_of_structures}{0.9}
 
 \`E stato definito un \textbf{tratto} per un entit\`a \textbf{Engine} che pu\`o essere utilizzato dal risolutore \textbf{IterativeSolver} per espletare una risoluzione iterativa generica. Gli \textbf{Engine} manipolano uno \textbf{State} interno al risolutore per implementare le loro specificit\`a. I risolutori ritornano una monade \textbf{Result} che permette di indicare se la computazione \`e andata a buon fine (i.e. se il limite di iterazioni non \`e stato superato). Questo ha un duplice scopo: tracciare l'informazione banale della convergenza e permettere all'engine che esercita le funzioni del metodo di Gauss Seidel di imporre un'asserzione sul successo della risoluzione del sistema triangolare associato.
 
@@ -168,9 +190,38 @@ L'istruzione \textit{state.update()} implementa il passaggio di iterazione, cosi
 
 \section{Benchmark}
 
-\subsection{Matrici Allegate}
+\subsection{Le Matrici Allegate}
+
+\putimagequadruple
+  {\putsubimage{./images/spy-spa1.png}{Visualizzazione di spa1.mtx}{png:spy-spa1}{0.4}{0.8}}
+  {\putsubimage{./images/spy-spa2.png}{Visualizzazione di spa2.mtx}{png:spy-spa2}{0.4}{0.8}}
+  {\putsubimage{./images/spy-vem1.png}{Visualizzazione di vem1.mtx}{png:spy-vem1}{0.4}{0.8}}
+  {\putsubimage{./images/spy-vem2.png}{Visualizzazione di vem2.mtx}{png:spy-vem2}{0.4}{0.8}}
+
+Come si pu\`o notare dal plot delle entrate non nulle, le prime due matrici (figure \ref{png:spy-spa1} e \ref{png:spy-spa2}) non presentano caratteristiche particolari, se non il fatto di essere simmetriche e definite positive.
+Al contrario le altre due (figure \ref{png:spy-vem1} e \ref{png:spy-vem2}) sono matrici simmetriche e definite positive a bande lungo la diagonale principale.
+
+\putimage{./images/dominance.png}{Rapporti di Dominanza Diagonale (ordinati) delle matrici}{png:dominance}{0.99}
+
+Computazionalmente \`e stato rilevato che le matrici $vem1$ e $vem2$ sono \textbf{a dominanza diagonale in senso debole} per colonne (e per righe essendo simmetriche), mentre le matrici $spa1$ e $spa2$ non lo sono (hanno almeno una riga/colonna che non soddisfa il criterio di dominanza diagonale debole).
+In figura \ref{png:dominance} si riportano i rapporti di dominanza diagonale (per colonne) ordinati per magnitudine (ottenuti come $\frac {| M[i, i] |} {\Sigma _ {i \ne j} | M[i, j] |}$).
+
+\subsection{Test di Convergenza}
 
 Sono state effettuate delle esecuzioni al variare della tolleranza, del metodo di risoluzione e della matrice di base $A$ (il problema \`e generato prendendo $x_e$ = $<1,.., 1>$ e quindi $b = Ax_e$) scelta tra le quattro matrici allegate al testo della consegna.
+Si riportano gli andamenti del numero di iterazioni impiegati per completare la risoluzione con i vari metodi (in scala semilogaritmica, $logY$, per facilitarne la consultazione siccome i grafici lineari risultano di difficile lettura).
+
+\putimagequadruple
+  {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-gre.png}{Andamenti (logaritmici) con il metodo del Gradiente}{png:it-re-gre}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-gse.png}{Andamenti (logaritmici) con il metodo di Gauss Seidel}{png:it-re-gse}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-jae.png}{Andamenti (logaritmici) con il metodo di Jacobi}{png:it-re-jae}{0.4}{0.8}}
+
+\putimagequadruple
+  {\putsubimage{./images/it-re-spa1.png}{Andamenti (logaritmici) su spa1.mtx}{png:it-re-spa1}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-spa2.png}{Andamenti (logaritmici) su spa2.mtx}{png:it-re-spa2}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-vem1.png}{Andamenti (logaritmici) su vem1.mtx}{png:it-re-vem1}{0.4}{0.8}}
+  {\putsubimage{./images/it-re-vem2.png}{Andamenti (logaritmici) su vem2.mtx}{png:it-re-vem2}{0.4}{0.8}}
 
 \subsection{Test di Scalabilit\`a}
 
