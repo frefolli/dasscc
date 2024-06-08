@@ -1,29 +1,39 @@
 #!/bin/bash
-TOL=10e-4
 MAXITER=30000
 
 function run_matrix_with_solver() {
-  matrix=$1
-  solver=$2
-  ./builddir/main.exe -S -v -m src:$matrix -s $solver:$TOL:$MAXITER
+  tol=$1
+  matrix=$2
+  solver=$3
+  ./builddir/main.exe -S -v -m src:$matrix -s $solver:$tol:$MAXITER
 }
 
 function run_matrix_and_collect_logs() {
-  matrix=$1
+  tol=$1
+  matrix=$2
   rm -rf /tmp/dasscc/logs
-  run_matrix_with_solver "$matrix" ja
-  run_matrix_with_solver "$matrix" gs
-  #run_matrix_with_solver "$matrix" ri
-  run_matrix_with_solver "$matrix" gr
-  run_matrix_with_solver "$matrix" cg
-  mkdir -p ./logs/$matrix
-  cp /tmp/dasscc/logs/*.csv ./logs/$matrix
+  run_matrix_with_solver $tol $matrix ja
+  run_matrix_with_solver $tol $matrix gs
+  #run_matrix_with_solver $tol $matrix ri
+  run_matrix_with_solver $tol $matrix gr
+  run_matrix_with_solver $tol $matrix cg
+  mkdir -p ./logs/$tol/$matrix
+  cp /tmp/dasscc/logs/*.csv ./logs/$tol/$matrix
+  python3 -m pesto plot -l logs/$tol -p plots/logs/$tol -v
+}
+
+function run_matrices_with_tol() {
+  tol=$1
+  run_matrix_and_collect_logs $tol spa1
+  run_matrix_and_collect_logs $tol spa2
+  run_matrix_and_collect_logs $tol vem1
+  run_matrix_and_collect_logs $tol vem2
 }
 
 function main() {
-  run_matrix_and_collect_logs spa1
-  run_matrix_and_collect_logs spa2
-  run_matrix_and_collect_logs vem1
-  run_matrix_and_collect_logs vem2
+  run_matrices_with_tol 10e-4
+  run_matrices_with_tol 10e-6
+  run_matrices_with_tol 10e-8
+  run_matrices_with_tol 10e-10
 }
 main

@@ -4,6 +4,7 @@ Plotting Unit
 import matplotlib.pyplot
 import pesto.generics
 import pesto.logs
+import logging
 import numpy
 import os
 
@@ -23,6 +24,9 @@ class AggregatePlotter(pesto.generics.ServiceObject[None]):
     self.title: str
     self.x: str
     self.y: str
+    self.outdir: str
+    filepath = os.path.join(self.outdir, '%s.png' % self.title)
+    logging.info("Generating %s" % filepath)
     fig = matplotlib.pyplot.figure(figsize=(15, 15))
     matplotlib.pyplot.title(self.title)
     for label in self.data:
@@ -30,8 +34,9 @@ class AggregatePlotter(pesto.generics.ServiceObject[None]):
     matplotlib.pyplot.xlabel(self.x)
     matplotlib.pyplot.ylabel(self.y)
     matplotlib.pyplot.legend()
-    matplotlib.pyplot.savefig('./plots/logs/%s.png' % self.title)
+    matplotlib.pyplot.savefig(filepath)
     matplotlib.pyplot.close(fig)
+    logging.info("Done with %s" % filepath)
 
 class FunctionalPlotter(pesto.generics.ServiceObject[None]):
   def exec(self) -> None:
@@ -39,7 +44,8 @@ class FunctionalPlotter(pesto.generics.ServiceObject[None]):
     self.crafter: pesto.generics.ServiceObject[dict]
     self.x: str
     self.y: str
-    os.makedirs('./plots/logs/', exist_ok=True)
+    self.outdir: str
+    os.makedirs(self.outdir, exist_ok=True)
     data = self.crafter.run(log=self.log)
-    for matrix in data:
-      AggregatePlotter.run(data=data[matrix], title=matrix, x=self.x, y=self.y)
+    for group in data:
+      AggregatePlotter.run(data=data[group], title=group, x=self.x, y=self.y, outdir=self.outdir)

@@ -137,6 +137,7 @@ int DoSolve(CliConfig& cli_config) {
   dasscc::MatrixSpecifier matrix_specifier = dasscc::ParseMatrixSpecifier(cli_config.matrix_pattern);
   if (cli_config.verbose) {
     dasscc::LogInfo("matrix.type:    " + dasscc::ToString(matrix_specifier.type));
+    dasscc::LogInfo("matrix.ID:       " + matrix_specifier.ID);
     dasscc::LogInfo("matrix.N:       " + std::to_string(matrix_specifier.N));
     dasscc::LogInfo("matrix.density: " + std::to_string(matrix_specifier.density));
   }
