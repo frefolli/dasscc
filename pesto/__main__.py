@@ -8,8 +8,8 @@ from pesto.crafters import PerSolverDataCrafter, PerMatrixDataCrafter
 
 def do_plot(config: argparse.Namespace) -> None:
   log = DassLogLoader.run(path=config.logpath)
-  FunctionalPlotter.run(log=log, crafter=PerSolverDataCrafter, x=config.xmetric, y=config.ymetric, outdir=config.plotpath)
-  FunctionalPlotter.run(log=log, crafter=PerMatrixDataCrafter, x=config.xmetric, y=config.ymetric, outdir=config.plotpath)
+  FunctionalPlotter.run(log=log, crafter=PerSolverDataCrafter, x=config.xmetric, y=config.ymetric, scale=config.scale, outdir=config.plotpath)
+  FunctionalPlotter.run(log=log, crafter=PerMatrixDataCrafter, x=config.xmetric, y=config.ymetric, scale=config.scale, outdir=config.plotpath)
 
 if __name__ == "__main__":
   action_map: dict[str, typing.Callable[[argparse.Namespace], None]] = {
@@ -22,6 +22,7 @@ if __name__ == "__main__":
   cli.add_argument('-p', '--plotpath', type=str, default='./plots/logs', help='dass plot path')
   cli.add_argument('-x', '--xmetric', type=str, default='TotalElapsed', choices=['TotalElapsed', 'Iteration'], help='which metric to plot on X axis')
   cli.add_argument('-y', '--ymetric', type=str, default='NormalizedResidual', choices=['NormalizedResidual', 'TotalElapsed', 'Iteration'], help='which metric to plot on Y ayis')
+  cli.add_argument('-s', '--scale', type=str, default='linlin', choices=['linlin', 'linlog', 'loglin', 'loglog'], help='scale of Xs/Ys in the plots')
   cli.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
   config = cli.parse_args(sys.argv[1:])
 
