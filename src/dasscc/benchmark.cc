@@ -41,6 +41,7 @@ void dasscc::Report::Cell::includeInfo(const dasscc::MatrixSpecifier& matrix_spe
   M = benchmark_matrix.cols();
   density = (double_t)benchmark_matrix.nonZeros() / (N * M);
   tol = _tol;
+  condition_number = dasscc::ConditionNumber(benchmark_matrix, matrix_specifier);
 }
 
 bool dasscc::Report::Cell::operator==(const Cell& other) const {
@@ -98,7 +99,8 @@ bool dasscc::LoadReport(dasscc::Report& report, const std::string& filepath) {
         .tol = cell->operator[]("tol").asDouble(),
         .elapsed = cell->operator[]("elapsed").asDouble(),
         .converged = cell->operator[]("converged").asBool(),
-        .error = cell->operator[]("error").asDouble()
+        .error = cell->operator[]("error").asDouble(),
+        .condition_number = cell->operator[]("condition_number").asDouble()
       });
     }
   }
@@ -121,6 +123,7 @@ bool dasscc::DumpReport(const dasscc::Report& report) {
       record["elapsed"] = cell.elapsed;
       record["converged"] = cell.converged;
       record["error"] = cell.error;
+      record["condition_number"] = cell.condition_number;
       records.append(record);
     }
     dump[subtable.first] = records;

@@ -1,3 +1,4 @@
+#include "dasscc/logging.hh"
 #include <dasscc.hh>
 #include <cassert>
 #include <iostream>
@@ -13,10 +14,31 @@ struct CliConfig {
   std::string benchmark_filepath = DEFAULT_BENCHMARK_FILEPATH;
   std::string report_filepath = DEFAULT_REPORT_FILEPATH;
   bool dry_run = false;
+  bool empty_run = false;
   bool verbose = false;
   bool solve = false;
   bool benchmark = false;
 };
+
+inline bool AskYN() {
+  std::cout << "May I do it? [y/N]: ";
+
+  std::string response;
+  do {
+    std::cin >> response;
+    while(response.starts_with(' '))
+      response.erase(0, 1);
+    if (response == "") {
+      return false;
+    } else if (response == "Y" || response == "y") {
+      return true;
+    } else if (response == "N" || response == "n") {
+      return false;
+    }
+
+    std::cout << "I didn't understand, may I do it? [y/N]: ";
+  } while(true);
+}
 
 inline void PrintHelp(std::string executable) {
   std::cerr << "Usage: " << executable << " [options]" << std::endl;
@@ -26,6 +48,7 @@ inline void PrintHelp(std::string executable) {
   std::cerr << "  -r/--report <report-filepath>         Expects a json Report filepath" << std::endl;
   std::cerr << "  -b/--benchmark <benchmark-filepath>   Expects a json Benchmark filepath" << std::endl;
   std::cerr << "  -d/--dry-run                          Exit after parsing specifiers" << std::endl;
+  std::cerr << "  -e/--empty-run                        Exit after loading matrix" << std::endl;
   std::cerr << "  -v/--verbose                          Verbose log" << std::endl;
   std::cerr << std::endl;
   std::cerr << "Actions:" << std::endl;
@@ -85,6 +108,8 @@ inline void ParseArguments(int argc, char** args, CliConfig& cli_config) {
       cli_config.solve = true;
     } else if (argument == "-d" || argument == "--dry-run") {
       cli_config.dry_run = true;
+    } else if (argument == "-e" || argument == "--empty-run") {
+      cli_config.empty_run = true;
     } else if (argument == "-v" || argument == "--verbose") {
       cli_config.verbose = true;
     }
@@ -152,19 +177,34 @@ int DoSolve(CliConfig& cli_config) {
   if (cli_config.dry_run)
     return 0;
 
+  if (cli_config.verbose)
+    dasscc::LogInfo("Loading Matrix ...");
   Eigen::SparseMatrix<double_t, Eigen::RowMajor> A;
   assert(dasscc::FromMatrixSpecifier(A, matrix_specifier));
   uint32_t N = A.cols();
+  if (cli_config.verbose)
+    dasscc::LogInfo("Loaded Matrix");
+
+  if (cli_config.empty_run)
+    return 0;
   
+  if (cli_config.verbose)
+    dasscc::LogInfo("Creating Example ...");
   Eigen::SparseVector<double_t> xe;
   dasscc::ArrayOfOnes(xe, N);
+  if (cli_config.verbose)
+    dasscc::LogInfo("Created Example");
   
   Eigen::SparseVector<double_t> b;
   b = A * xe;
 
+  if (cli_config.verbose)
+    dasscc::LogInfo("Solving Matrix ...");
   dasscc::Result<Eigen::SparseVector<double_t>> result;
   UseSpecifierSolver(result, solver_specifier, A, b);
   assert(result.type == result.OK);
+  if (cli_config.verbose)
+    dasscc::LogInfo("Solved Matrix");
 
   dasscc::Comparison comparison = dasscc::CompareVectors(xe, result.data);
   std::cout << "same_dimension := " << comparison.same_dimension << std::endl;
@@ -187,12 +227,17 @@ int DoBenchmark(CliConfig& cli_config) {
 
   dasscc::Benchmark benchmark;
   if (!dasscc::LoadBenchmark(benchmark, cli_config.benchmark_filepath)) {
-    dasscc::LogInfo("file " + cli_config.benchmark_filepath + " doesn't exist, defaulting and creating it");
-    benchmark = {
-      .matrix_patterns = {"rdd:50:0.05"},
-      .tols = {10e-6, 10e-7}
-    };
-    dasscc::DumpBenchmark(benchmark, cli_config.benchmark_filepath);
+    dasscc::LogInfo("file " + cli_config.benchmark_filepath + " doesn't exist, defaulting and creating it, if you wish");
+    if (AskYN()) {
+      benchmark = {
+        .matrix_patterns = {"rdd:50:0.10"},
+        .tols = {10e-7}
+      };
+      dasscc::DumpBenchmark(benchmark, cli_config.benchmark_filepath);
+      dasscc::LogInfo("wrote " + cli_config.benchmark_filepath);
+    } else {
+      dasscc::LogInfo("aborting");
+    }
   }
 
   if (cli_config.dry_run)

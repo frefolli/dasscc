@@ -188,9 +188,7 @@ L'istruzione \textit{state.update()} implementa il passaggio di iterazione, cosi
 \end{lstlisting}
 \end{nota}
 
-\section{Benchmark}
-
-\subsection{Le Matrici Allegate}
+\section{Le Matrici Allegate}
 
 \putimagequadruple
   {\putsubimage{./images/spy-spa1.png}{Visualizzazione di spa1.mtx}{png:spy-spa1}{0.4}{0.8}}
@@ -206,28 +204,51 @@ Al contrario le altre due (figure \ref{png:spy-vem1} e \ref{png:spy-vem2}) sono 
 Computazionalmente \`e stato rilevato che le matrici $vem1$ e $vem2$ sono \textbf{a dominanza diagonale in senso debole} per colonne (e per righe essendo simmetriche), mentre le matrici $spa1$ e $spa2$ non lo sono (hanno almeno una riga/colonna che non soddisfa il criterio di dominanza diagonale debole).
 In figura \ref{png:dominance} si riportano i rapporti di dominanza diagonale (per colonne) ordinati per magnitudine (ottenuti come $\frac {| M[i, i] |} {\Sigma _ {i \ne j} | M[i, j] |}$).
 
-\subsection{Test di Convergenza}
+\section{Test di Convergenza}
 
 Sono state effettuate delle esecuzioni al variare della tolleranza, del metodo di risoluzione e della matrice di base $A$ (il problema \`e generato prendendo $x_e$ = $<1,.., 1>$ e quindi $b = Ax_e$) scelta tra le quattro matrici allegate al testo della consegna.
-Si riportano gli andamenti del numero di iterazioni impiegati per completare la risoluzione con i vari metodi (in scala semilogaritmica, $logY$, per facilitarne la consultazione siccome i grafici lineari risultano di difficile lettura).
+Si riportano gli andamenti del numero di iterazioni impiegati per completare la risoluzione con i vari metodi (in scala semilogaritmica sulla $Y$, per facilitarne la consultazione siccome i grafici lineari risultano di difficile lettura).
+Si segnala fin da subito che tutte le matrici convergono per i vari metodi, risultato importante visto che la convergenza di Gauss Seidel e Jacobi sulle matrici simmetriche e definite positive non \`e certa.
 
-\putimagequadruple
-  {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-gre.png}{Andamenti (logaritmici) con il metodo del Gradiente}{png:it-re-gre}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-gse.png}{Andamenti (logaritmici) con il metodo di Gauss Seidel}{png:it-re-gse}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-jae.png}{Andamenti (logaritmici) con il metodo di Jacobi}{png:it-re-jae}{0.4}{0.8}}
+\subsection{Metodi basati sul Gradiente}
 
-\putimagequadruple
-  {\putsubimage{./images/it-re-spa1.png}{Andamenti (logaritmici) su spa1.mtx}{png:it-re-spa1}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-spa2.png}{Andamenti (logaritmici) su spa2.mtx}{png:it-re-spa2}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-vem1.png}{Andamenti (logaritmici) su vem1.mtx}{png:it-re-vem1}{0.4}{0.8}}
-  {\putsubimage{./images/it-re-vem2.png}{Andamenti (logaritmici) su vem2.mtx}{png:it-re-vem2}{0.4}{0.8}}
+I due metodi basati sul gradiente hanno un andamento simile: lavorano bene sulle due matrici a bande (vem1/vem2), mentre hanno qualche leggera difficolt\`a a convergere con tolleranze p\`u basse con le due matrici "dense" randomiche (spa1/spa2).
+Un dato significativo \`e il numero di iterazioni necessarie, per il metodo del \textbf{Gradiente Coniugato} \`e di molto inferiore rispetto a quello del \textbf{Gradiente}. A prima vista pu\`o sembrare che il metodo del Gradiente Coniugato sia pi\`u lento per il fatto che esegue pi\`u operazioni per ogni iterazione rispetto al Gradiente, ma siccome il numero di iterazioni \`e complessivamente di scala pi\`u bassa, abbiamo una priva evidenza che suggerisce che sia pi\`u mediamente veloce.
 
-\subsection{Test di Scalabilit\`a}
+\putimagecouple
+  {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.9}}
+  {\putsubimage{./images/it-re-gre.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente}{png:it-re-gre}{0.4}{0.9}}
 
-Per ogni metodo di risoluzione sono state generare randomicamente delle matrici di base $A$ di dimensione variabile ($100 \rightarrow 10000$) con il requisito che soddisfino il criterio di convergenza e si sono annotati i tempi di esecuzione per valutarne l'andamento all'aumentare della dimensione della matrice di input.
+\putimagecouple
+  {\putsubimage{./images/te-re-cge.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente Coniugato}{png:te-re-cge}{0.4}{0.9}}
+  {\putsubimage{./images/te-re-gre.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente}{png:te-re-gre}{0.4}{0.9}}
 
-\subsection{Tenere d'Occhio il Condizionamento}
+\subsection{Metodi Stabili}
+
+Anche qui gli andamenti dei due metodi si assomigliano asintoticamente: le due matrici a dominanza diagonale convergono molto pi\`u lentamente delle due matrici randomiche. In particolare il metodo di \textbf{Jacobi} impiega mediamente il doppio delle iterazioni rispetto al metodo di \textbf{Gauss Seidel}, tuttavia se osserviamo i dati rispetto al tempo di esecuzione impiegato si scopre come questa differenza \`e bilanciata dalla semplicit\`a delle operazioni del metodo di Jacobi.
+
+\putimagecouple
+  {\putsubimage{./images/it-re-gse.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Gauss Seidel}{png:it-re-gse}{0.4}{0.9}}
+  {\putsubimage{./images/it-re-jae.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Jacobi}{png:it-re-jae}{0.4}{0.9}}
+
+\putimagecouple
+  {\putsubimage{./images/te-re-gse.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Gauss Seidel}{png:te-re-gse}{0.4}{0.9}}
+  {\putsubimage{./images/te-re-jae.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Jacobi}{png:te-re-jae}{0.4}{0.9}}
+
+%\putimagecouple
+%  {\putsubimage{./images/it-re-spa1.png}{Andamenti (logaritmici) su spa1.mtx}{png:it-re-spa1}{0.4}{0.8}}
+%  {\putsubimage{./images/it-re-spa2.png}{Andamenti (logaritmici) su spa2.mtx}{png:it-re-spa2}{0.4}{0.8}}
+
+%\putimagecouple
+%  {\putsubimage{./images/it-re-vem1.png}{Andamenti (logaritmici) su vem1.mtx}{png:it-re-vem1}{0.4}{0.8}}
+%  {\putsubimage{./images/it-re-vem2.png}{Andamenti (logaritmici) su vem2.mtx}{png:it-re-vem2}{0.4}{0.8}}
+
+\section{Test di Scalabilit\`a}
+
+Le quattro matrici hanno dimensione diversa quindi gli andamenti soffrono anche della scala rispetto al numero di righe/colonne. Per verificare come scalano i metodi, per ognuno di essi sono state generate randomicamente delle matrici di base $A$ di dimensione variabile ($100 \rightarrow 10000$) con il requisito che soddisfino il criterio di convergenza e si sono annotati i tempi di esecuzione per valutarne l'andamento all'aumentare della dimensione della matrice di input.
+Per semplificare le esecuzioni si \`e deciso di utilizzare matrici a dominanza diagonale per tutte le matrici (per assicurarsi che i metodi stabili convergano).
+
+\section{Tenere d'Occhio il Condizionamento}
 
 Sono stati eseguiti vari test senza variare la dimensione della matrice ed annotando il condizionamento per vedere come si comportano i metodi al variare di esso.
 

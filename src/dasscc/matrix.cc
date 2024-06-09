@@ -1,7 +1,10 @@
+#include <cstdlib>
 #include <dasscc/matrix.hh>
 #include <dasscc/logging.hh>
+#include <filesystem>
 #include <random>
 #include <cassert>
+#include <sstream>
 #include <vector>
 #include <set>
 #include <fstream>
@@ -9,6 +12,7 @@
 #include <Spectra/MatOp/SparseSymMatProd.h>
 #include <Spectra/GenEigsSolver.h>
 #include <Spectra/Util/CompInfo.h>
+const std::string CACHEDIR = "/home/refo/.cache/dasscc";
 
 bool dasscc::LoadFromFile(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath) {
   return (Eigen::loadMarket(matrix, filepath));
@@ -16,6 +20,63 @@ bool dasscc::LoadFromFile(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix
 
 bool dasscc::DumpToFile(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath) {
   return (Eigen::saveMarket(matrix, filepath));
+}
+
+bool dasscc::DumpToBin(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filename) {
+  assert(matrix.isCompressed() == true);
+  std::ofstream out(filename, std::ios::binary | std::ios::out | std::ios::trunc);
+  if(out.is_open()) {
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index rows, cols, nnzs, outS, innS;
+    rows = matrix.rows()     ;
+    cols = matrix.cols()     ;
+    nnzs = matrix.nonZeros() ;
+    outS = matrix.outerSize();
+    innS = matrix.innerSize();
+
+    out.write(reinterpret_cast<char*>(&rows), sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index));
+    out.write(reinterpret_cast<char*>(&cols), sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index));
+    out.write(reinterpret_cast<char*>(&nnzs), sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index));
+    out.write(reinterpret_cast<char*>(&outS), sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index));
+    out.write(reinterpret_cast<char*>(&innS), sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index));
+
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index sizeIndexS = static_cast<typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index>(sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::StorageIndex));
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index sizeScalar = static_cast<typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index>(sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Scalar      ));
+    out.write(reinterpret_cast<const char*>(matrix.valuePtr()),       sizeScalar * nnzs);
+    out.write(reinterpret_cast<const char*>(matrix.outerIndexPtr()),  sizeIndexS  * outS);
+    out.write(reinterpret_cast<const char*>(matrix.innerIndexPtr()),  sizeIndexS  * nnzs);
+
+    out.close();
+    return true;
+  }
+  return false;
+}
+
+bool dasscc::LoadFromBin(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filename) {
+  std::ifstream in(filename, std::ios::binary | std::ios::in);
+  if(in.is_open()) {
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index rows, cols, nnz, inSz, outSz;
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index sizeScalar = static_cast<typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index>(sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Scalar      ));
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index sizeIndex  = static_cast<typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index>(sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index       ));
+    typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index sizeIndexS = static_cast<typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::Index>(sizeof(typename Eigen::SparseMatrix<double_t, Eigen::RowMajor>::StorageIndex));
+    in.read(reinterpret_cast<char*>(&rows ), sizeIndex);
+    in.read(reinterpret_cast<char*>(&cols ), sizeIndex);
+    in.read(reinterpret_cast<char*>(&nnz  ), sizeIndex);
+    in.read(reinterpret_cast<char*>(&outSz), sizeIndex);
+    in.read(reinterpret_cast<char*>(&inSz ), sizeIndex);
+
+    matrix.resize(rows, cols);
+    matrix.makeCompressed();
+    matrix.resizeNonZeros(nnz);
+
+    in.read(reinterpret_cast<char*>(matrix.valuePtr())     , sizeScalar * nnz  );
+    in.read(reinterpret_cast<char*>(matrix.outerIndexPtr()), sizeIndexS * outSz);
+    in.read(reinterpret_cast<char*>(matrix.innerIndexPtr()), sizeIndexS * nnz );
+
+    matrix.finalize();
+    in.close();
+    return true;
+  }
+  return false;
 }
 
 void dasscc::Random(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, uint32_t N, uint32_t M, double_t density) {
@@ -197,8 +258,8 @@ bool dasscc::Eigenvalues(double_t& smallest, double_t& biggest, const Eigen::Spa
   if (!_Eigenvalues(found, matrix))
     return false;
   const uint32_t rows = found.rows();
-  smallest = found.coeff(0, 0).real();
-  biggest = found.coeff(rows - 1, 0).real();
+  biggest = found.coeff(0, 0).real();
+  smallest = found.coeff(rows - 1, 0).real();
   return true;
 }
 
@@ -213,36 +274,79 @@ bool dasscc::Eigenvalues(Eigen::MatrixXd& eigenvalues, const Eigen::SparseMatrix
   return true;
 }
 
+double_t dasscc::ConditionNumber(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix) {
+  double_t smallest, biggest;
+  dasscc::Eigenvalues(smallest, biggest, matrix);
+  return biggest / smallest;
+}
+
+inline std::string MangledPathForConditionNumber(const dasscc::MatrixSpecifier& specifier) {
+  std::filesystem::create_directories(CACHEDIR);
+  std::ostringstream str;
+  str << CACHEDIR << "/" << dasscc::ToString(specifier.type) << "_" << specifier.ID << "_" << specifier.N << "_" << specifier.density << ".cn.bin";
+  return str.str();
+}
+
+double_t dasscc::ConditionNumber(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const dasscc::MatrixSpecifier& specifier) {
+  std::string mangled_path = MangledPathForConditionNumber(specifier);
+  double_t condition_number = -1.0f;
+  
+  std::ifstream in(mangled_path, std::ios::binary | std::ios::in);
+  if(in.is_open()) {
+    in.read(reinterpret_cast<char*>(&condition_number), sizeof(double_t));
+    in.close();
+  } else {
+    condition_number = dasscc::ConditionNumber(matrix);
+    std::ofstream out(mangled_path, std::ios::binary | std::ios::out | std::ios::trunc);
+    assert(out.is_open());
+    out.write(reinterpret_cast<char*>(&condition_number), sizeof(double_t));
+    out.close();
+  }
+  return condition_number;
+}
+
 bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, std::string pattern) {
   dasscc::MatrixSpecifier specifier = dasscc::ParseMatrixSpecifier(pattern);
   return dasscc::FromMatrixSpecifier(matrix, specifier);
 }
-  
+
+inline std::string MangledPathForCache(const dasscc::MatrixSpecifier& specifier) {
+  std::filesystem::create_directories(CACHEDIR);
+  std::ostringstream str;
+  str << CACHEDIR << "/" << dasscc::ToString(specifier.type) << "_" << specifier.ID << "_" << specifier.N << "_" << specifier.density << ".bin";
+  return str.str();
+}
+
 bool dasscc::FromMatrixSpecifier(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const dasscc::MatrixSpecifier& specifier) {
   bool success = true;
-  switch (specifier.type) {
-    case dasscc::MatrixSpecifier::Type::SPD: {
-      dasscc::RandomSymmetricPositiveDefined(matrix, specifier.N, specifier.density);
-    }; break;
-    case dasscc::MatrixSpecifier::Type::UT: {
-      dasscc::RandomUpperTriangular(matrix, specifier.N, specifier.N, specifier.density);
-    }; break;
-    case dasscc::MatrixSpecifier::Type::LT: {
-      dasscc::RandomLowerTriangular(matrix, specifier.N, specifier.N, specifier.density);
-    }; break;
-    case dasscc::MatrixSpecifier::Type::CDD: {
-      dasscc::RandomColumnDiagonalDominant(matrix, specifier.N, specifier.density);
-    }; break;
-    case dasscc::MatrixSpecifier::Type::RDD: {
-      dasscc::RandomRowDiagonalDominant(matrix, specifier.N, specifier.density);
-    }; break;
-    case dasscc::MatrixSpecifier::Type::SRC: {
-      std::string path = "resources/matrices/" + specifier.ID + ".mtx";
-      success = dasscc::LoadFromFile(matrix, path);
-    }; break;
-    default: {
-      success = false;
-    };
+  std::string mangled_path = MangledPathForCache(specifier);
+  if (!dasscc::LoadFromBin(matrix, mangled_path)) {
+    switch (specifier.type) {
+      case dasscc::MatrixSpecifier::Type::SPD: {
+        dasscc::RandomSymmetricPositiveDefined(matrix, specifier.N, specifier.density);
+      }; break;
+      case dasscc::MatrixSpecifier::Type::UT: {
+        dasscc::RandomUpperTriangular(matrix, specifier.N, specifier.N, specifier.density);
+      }; break;
+      case dasscc::MatrixSpecifier::Type::LT: {
+        dasscc::RandomLowerTriangular(matrix, specifier.N, specifier.N, specifier.density);
+      }; break;
+      case dasscc::MatrixSpecifier::Type::CDD: {
+        dasscc::RandomColumnDiagonalDominant(matrix, specifier.N, specifier.density);
+      }; break;
+      case dasscc::MatrixSpecifier::Type::RDD: {
+        dasscc::RandomRowDiagonalDominant(matrix, specifier.N, specifier.density);
+      }; break;
+      case dasscc::MatrixSpecifier::Type::SRC: {
+        std::string path = "resources/matrices/" + specifier.ID + ".mtx";
+        success = dasscc::LoadFromFile(matrix, path);
+      }; break;
+      default: {
+        success = false;
+      };
+    }
+    matrix.makeCompressed();
+    assert(dasscc::DumpToBin(matrix, mangled_path));
   }
   return success;
 }

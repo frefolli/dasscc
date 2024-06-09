@@ -13,10 +13,10 @@ class DictOfListsToDictOfArrays(pesto.generics.ServiceObject[dict]):
 
 class PerSolverDataCrafter(pesto.generics.ServiceObject[dict]):
   def exec(self) -> dict:
-    self.log: pesto.logs.DassLog
+    self.input: pesto.logs.DassLog
     data = {}
-    for matrix in self.log.logs:
-      matrix_data = self.log.logs[matrix].logs
+    for matrix in self.input.logs:
+      matrix_data = self.input.logs[matrix].logs
       for solver in matrix_data:
         solver_data = matrix_data[solver].logs
         if solver not in data:
@@ -26,10 +26,10 @@ class PerSolverDataCrafter(pesto.generics.ServiceObject[dict]):
 
 class PerMatrixDataCrafter(pesto.generics.ServiceObject[dict]):
   def exec(self) -> dict:
-    self.log: pesto.logs.DassLog
+    self.input: pesto.logs.DassLog
     data = {}
-    for matrix in self.log.logs:
-      matrix_data = self.log.logs[matrix].logs
+    for matrix in self.input.logs:
+      matrix_data = self.input.logs[matrix].logs
       data[matrix] = {k:DictOfListsToDictOfArrays.run(payload=matrix_data[k].logs) for k in matrix_data}
     return data
 
@@ -58,4 +58,15 @@ class DiagonalDominanceReportCrafter(pesto.generics.ServiceObject[dict]):
     reports: dict = {}
     for name in self.matrices:
       reports[name] = self.crafter.run(matrix=self.matrices[name])
+    return reports
+
+class BenchmarkReportCrafter(pesto.generics.ServiceObject[dict]):
+  def exec(self) -> dict:
+    self.input: dict
+    reports: dict = {}
+    for solver in self.input:
+      subreport = {}
+      for key in self.input[solver][0].keys():
+        subreport[key] = [record[key] for record in self.input[solver]]
+      reports[solver] = subreport
     return reports

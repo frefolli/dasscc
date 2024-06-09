@@ -23,6 +23,7 @@ namespace dasscc {
       double_t elapsed;
       bool converged;
       double_t error;
+      double_t condition_number;
 
       /** Cell key comprises infos about benchmark, not the results */
       std::string toKey() const;

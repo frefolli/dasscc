@@ -3,9 +3,9 @@ import sys
 import argparse
 import logging
 import os
-from pesto.loaders import DassLogLoader, MatrixMarketLoader
+from pesto.loaders import DassLogLoader, MatrixMarketLoader, JsonLoader
 from pesto.plotters import FunctionalPlotter, SparseMatrixPlotter
-from pesto.crafters import DiagonalDominanceReportCrafter, PerSolverDataCrafter, PerMatrixDataCrafter, ColumnDiagonalDominanceReportCrafter, RowDiagonalDominanceReportCrafter, ColumnDiagonalDominanceReportCrafter
+from pesto.crafters import DiagonalDominanceReportCrafter, PerSolverDataCrafter, PerMatrixDataCrafter, ColumnDiagonalDominanceReportCrafter, RowDiagonalDominanceReportCrafter, ColumnDiagonalDominanceReportCrafter, BenchmarkReportCrafter
 
 def do_plot(config: argparse.Namespace) -> None:
   log = DassLogLoader.run(path=config.logpath)
@@ -31,15 +31,25 @@ def do_dom(config: argparse.Namespace) -> None:
   plotdir = os.path.join(config.plotpath, 'dominance')
   FunctionalPlotter.run(input={config.dominance: reports}, crafter=None, x='i', y='rapporto_di_dominanza', scale=config.scale, ranges=None, outdir=plotdir)
 
+def do_benchmark(config: argparse.Namespace) -> None:
+  data = JsonLoader.run(path=config.benchmarkpath)
+  reports = BenchmarkReportCrafter.run(input=data)
+  x='N'
+  #y='error'
+  y='elapsed'
+  FunctionalPlotter.run(input={f"benchmark-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
+
 if __name__ == "__main__":
   action_map: dict[str, typing.Callable[[argparse.Namespace], None]] = {
     'plot': do_plot,
     'spy': do_spy,
-    'dom': do_dom
+    'dom': do_dom,
+    'benchmark': do_benchmark
   }
 
   cli = argparse.ArgumentParser()
   cli.add_argument('verb', type=str, choices=action_map.keys(), help='action to perform')
+  cli.add_argument('-b', '--benchmarkpath', type=str, default='./report.json', help='dass benchmark path')
   cli.add_argument('-l', '--logpath', type=str, default='./logs', help='dass log path')
   cli.add_argument('-p', '--plotpath', type=str, default='./plots/logs', help='dass plot path')
   cli.add_argument('-m', '--mmpath', type=str, help='matrix market file/dir path')

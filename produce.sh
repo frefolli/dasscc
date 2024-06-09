@@ -68,9 +68,9 @@ function deliver_artifacts() {
 
 function main() {
   #benchmark_of_attached_matrices
-  dominance_reports
+  #dominance_reports
   #spy_of_attached_matrices
-  #deliver_artifacts
+  deliver_artifacts
 }
 
 main

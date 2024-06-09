@@ -16,11 +16,25 @@ namespace dasscc {
   bool LoadFromFile(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath);
 
   /**
-   * Dumps a Sparse Matrix from .mtx file
+   * Dumps a Sparse Matrix to .mtx file
    * @param matrix input matrix
    * @param filepath output file path
    */
   bool DumpToFile(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filepath);
+
+  /**
+   * Loads a Sparse Matrix from .bin file
+   * @param matrix output matrix
+   * @param filepath input file path
+   */
+  bool LoadFromBin(Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filename);
+
+  /**
+   * Dumps a Sparse Matrix to .bin file
+   * @param matrix input matrix
+   * @param filepath output file path
+   */
+  bool DumpToBin(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const std::string& filename);
 
   /**
    * Sets the input matrix to a new random NxM sparse matrix;
@@ -66,6 +80,17 @@ namespace dasscc {
    * Computes smallest and biggest eigenvalues of a Sparse Matrix
   */
   bool Eigenvalues(double_t& smallest, double_t& biggest, const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix);
+
+  /**
+   * Computes Condition Number of a Sparse Matrix
+   */
+  double_t ConditionNumber(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix);
+
+
+  /**
+   * Computes Condition Number of a Sparse Matrix or uses the cached version
+   */
+  double_t ConditionNumber(const Eigen::SparseMatrix<double_t, Eigen::RowMajor>& matrix, const dasscc::MatrixSpecifier& specifier);
 
   /**
    * Set matrix to a Nx1 array of 0s.
