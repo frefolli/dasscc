@@ -15,6 +15,8 @@
 
 \usepackage{listings}
 \usepackage{listings-cpp}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
 
 \newtheorem{nota}{Nota}
 
@@ -132,53 +134,41 @@ Per l'implementazione si \`e scelto di sviluppare la libreria in C++ con Eigen, 
 
 In generale tutti i metodi iterativi oggetto di questo progetto hanno la medesima struttura, per questa ragione si \`e deciso di strutturare la libreria in modo da avere un oggetto che si occupa dell'algoritmo generale e vari oggetti che implementano fasi specifiche dei singoli metodi iterativi. Siccome Gauss-Seidel richiede anche un solutore di matrici triangolari si \`e implementato anche quello da zero con Eigen.
 
-\putimage{images/diagram.png}{Diagramma di Strutture e Tratti d'Interesse}{png:diagram_of_structures}{0.9}
+\putimage{images/diagram.png}{Diagramma di Strutture e Tratti d'Interesse}{png:diagram_of_structures}{0.99}
 
 \`E stato definito un \textbf{tratto} per un entit\`a \textbf{Engine} che pu\`o essere utilizzato dal risolutore \textbf{IterativeSolver} per espletare una risoluzione iterativa generica. Gli \textbf{Engine} manipolano uno \textbf{State} interno al risolutore per implementare le loro specificit\`a. I risolutori ritornano una monade \textbf{Result} che permette di indicare se la computazione \`e andata a buon fine (i.e. se il limite di iterazioni non \`e stato superato). Questo ha un duplice scopo: tracciare l'informazione banale della convergenza e permettere all'engine che esercita le funzioni del metodo di Gauss Seidel di imporre un'asserzione sul successo della risoluzione del sistema triangolare associato.
 
-\begin{lstlisting}[language=C++]
-Result<Vector> IterativeSolver::run(Matrix &A, Vector &b,
-                                    double_t tol, uint32_t maxIter) {
-  State state;
-  // Load Input
-  state.A = A;
-  state.b = b;
-
-  // Precompute norm of b
-  double_t norm_of_b = state.b.norm();
-
-  // Initialize
-  const uint32_t N = A.cols();
-  ArrayOfZeros(state.x_k, N);
-  state.r_k = state.b - state.A * state.x_k;
-  engine.post_initialize(state);
-
-  for (uint32_t k = 1; k <= maxIter; ++k) {
-    // Check Tolerance
-    double_t normalized_residual = state.r_k.norm() / norm_of_b;
-    if (normalized_residual < tol) {
-      return Result<Vector>::Ok(state.x_k);
-    }
-
-    // Compute Y
-    engine.pre_compute_y(state);
-    engine.compute_y(state);
-
-    // Compute Xn
-    state.x_n = state.x_k + state.y;
-    state.r_n = state.b - (state.A * state.x_n);
-    engine.post_compute_x(state);
-
-    // End of Iteration
-    state.update();
-  } 
-  return Result<Vector>::Err();
-}
-\end{lstlisting}
+\begin{algorithm}
+  \renewcommand\thealgorithm{}
+  \caption{Algoritmo Generale Iterativo}
+  \begin{algorithmic}
+    \Procedure{IterativeSolver::run}{$A, b, tol, maxIter$}
+      \State $state \gets State::new()$
+      \State $state.A \gets A$
+      \State $state.b \gets b$
+      \State $norm\_of\_b \gets state.b.norm()$
+      \State $state.x_k \gets ArrayOfZeros(state.A.cols())$
+      \State $state.r_k \gets state.b - state.A \cdot state.x_k$
+      \State engine.post\_initialize(state)
+      \For{$k \gets 1$ to $maxIter$}
+        \State $normalized\_residual \gets \frac {state.r_k.norm()} {norm\_of\_b}$
+        \If{$normalized\_residual < tol$}
+          \State \Return $Ok(state.r_k)$
+        \EndIf
+        \State engine.pre\_compute\_y(state)
+        \State engine.compute\_y(state)
+        \State $state.x_n = state.x_k + state.y$
+        \State $state.r_n \gets state.b - state.A \cdot state.x_n$
+        \State engine.post\_compute\_x(state)
+        \State state.update()
+      \EndFor
+      \State \Return $Err()$
+    \EndProcedure
+  \end{algorithmic}
+\end{algorithm}
 
 \begin{nota}
 L'istruzione \textit{state.update()} implementa il passaggio di iterazione, cosicch\`e si possa evitare di scrivere esplicitamente per ogni valore di iterata $x_k = x_n$ (dove chiaramente $n = k+1$). In Python ed altri linguaggi questo pu\`o essere fatto tramite la metaprogrammazione, in C++ si \`e fatto uso delle macro per semplificare questo passaggio all'interno di \textit{State}:
-
 
 \begin{lstlisting}[language=C++]
 #define AssignKToNAndCleanN(what) \
@@ -188,23 +178,25 @@ L'istruzione \textit{state.update()} implementa il passaggio di iterazione, cosi
 \end{lstlisting}
 \end{nota}
 
+\pagebreak
+
 \section{Le Matrici Allegate}
 
 \putimagequadruple
-  {\putsubimage{./images/spy-spa1.png}{Visualizzazione di spa1.mtx}{png:spy-spa1}{0.4}{0.8}}
-  {\putsubimage{./images/spy-spa2.png}{Visualizzazione di spa2.mtx}{png:spy-spa2}{0.4}{0.8}}
-  {\putsubimage{./images/spy-vem1.png}{Visualizzazione di vem1.mtx}{png:spy-vem1}{0.4}{0.8}}
-  {\putsubimage{./images/spy-vem2.png}{Visualizzazione di vem2.mtx}{png:spy-vem2}{0.4}{0.8}}
+  {\putsubimage{./images/spy-spa1.png}{Visualizzazione di spa1.mtx}{png:spy-spa1}{0.4}{0.99}}
+  {\putsubimage{./images/spy-spa2.png}{Visualizzazione di spa2.mtx}{png:spy-spa2}{0.4}{0.99}}
+  {\putsubimage{./images/spy-vem1.png}{Visualizzazione di vem1.mtx}{png:spy-vem1}{0.4}{0.99}}
+  {\putsubimage{./images/spy-vem2.png}{Visualizzazione di vem2.mtx}{png:spy-vem2}{0.4}{0.99}}
 
 Come si pu\`o notare dal plot delle entrate non nulle, le prime due matrici (figure \ref{png:spy-spa1} e \ref{png:spy-spa2}) non presentano caratteristiche particolari, se non il fatto di essere simmetriche e definite positive.
 Al contrario le altre due (figure \ref{png:spy-vem1} e \ref{png:spy-vem2}) sono matrici simmetriche e definite positive a bande lungo la diagonale principale.
 
-\putimage{./images/dominance.png}{Rapporti di Dominanza Diagonale (ordinati) delle matrici}{png:dominance}{0.99}
+\putimage{./images/dominance.png}{Rapporti di Dominanza Diagonale (ordinati) delle matrici}{png:dominance}{0.9}
 
 Computazionalmente \`e stato rilevato che le matrici $vem1$ e $vem2$ sono \textbf{a dominanza diagonale in senso debole} per colonne (e per righe essendo simmetriche), mentre le matrici $spa1$ e $spa2$ non lo sono (hanno almeno una riga/colonna che non soddisfa il criterio di dominanza diagonale debole).
 In figura \ref{png:dominance} si riportano i rapporti di dominanza diagonale (per colonne) ordinati per magnitudine (ottenuti come $\frac {| M[i, i] |} {\Sigma _ {i \ne j} | M[i, j] |}$).
 
-\section{Test di Convergenza}
+\section{Convergenza}
 
 Sono state effettuate delle esecuzioni al variare della tolleranza, del metodo di risoluzione e della matrice di base $A$ (il problema \`e generato prendendo $x_e$ = $<1,.., 1>$ e quindi $b = Ax_e$) scelta tra le quattro matrici allegate al testo della consegna.
 Si riportano gli andamenti del numero di iterazioni impiegati per completare la risoluzione con i vari metodi (in scala semilogaritmica sulla $Y$, per facilitarne la consultazione siccome i grafici lineari risultano di difficile lettura).
@@ -216,41 +208,38 @@ I due metodi basati sul gradiente hanno un andamento simile: lavorano bene sulle
 Un dato significativo \`e il numero di iterazioni necessarie, per il metodo del \textbf{Gradiente Coniugato} \`e di molto inferiore rispetto a quello del \textbf{Gradiente}. A prima vista pu\`o sembrare che il metodo del Gradiente Coniugato sia pi\`u lento per il fatto che esegue pi\`u operazioni per ogni iterazione rispetto al Gradiente, ma siccome il numero di iterazioni \`e complessivamente di scala pi\`u bassa, abbiamo una priva evidenza che suggerisce che sia pi\`u mediamente veloce.
 
 \putimagecouple
-  {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.9}}
-  {\putsubimage{./images/it-re-gre.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente}{png:it-re-gre}{0.4}{0.9}}
+  {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.99}}
+  {\putsubimage{./images/it-re-gre.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente}{png:it-re-gre}{0.4}{0.99}}
 
 \putimagecouple
-  {\putsubimage{./images/te-re-cge.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente Coniugato}{png:te-re-cge}{0.4}{0.9}}
-  {\putsubimage{./images/te-re-gre.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente}{png:te-re-gre}{0.4}{0.9}}
+  {\putsubimage{./images/te-re-cge.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente Coniugato}{png:te-re-cge}{0.4}{0.99}}
+  {\putsubimage{./images/te-re-gre.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo del Gradiente}{png:te-re-gre}{0.4}{0.99}}
 
-\subsection{Metodi Stabili}
+\subsection{Metodi Stazionari}
 
 Anche qui gli andamenti dei due metodi si assomigliano asintoticamente: le due matrici a dominanza diagonale convergono molto pi\`u lentamente delle due matrici randomiche. In particolare il metodo di \textbf{Jacobi} impiega mediamente il doppio delle iterazioni rispetto al metodo di \textbf{Gauss Seidel}, tuttavia se osserviamo i dati rispetto al tempo di esecuzione impiegato si scopre come questa differenza \`e bilanciata dalla semplicit\`a delle operazioni del metodo di Jacobi.
 
 \putimagecouple
-  {\putsubimage{./images/it-re-gse.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Gauss Seidel}{png:it-re-gse}{0.4}{0.9}}
-  {\putsubimage{./images/it-re-jae.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Jacobi}{png:it-re-jae}{0.4}{0.9}}
+  {\putsubimage{./images/it-re-gse.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Gauss Seidel}{png:it-re-gse}{0.4}{0.99}}
+  {\putsubimage{./images/it-re-jae.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo di Jacobi}{png:it-re-jae}{0.4}{0.99}}
 
 \putimagecouple
-  {\putsubimage{./images/te-re-gse.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Gauss Seidel}{png:te-re-gse}{0.4}{0.9}}
-  {\putsubimage{./images/te-re-jae.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Jacobi}{png:te-re-jae}{0.4}{0.9}}
+  {\putsubimage{./images/te-re-gse.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Gauss Seidel}{png:te-re-gse}{0.4}{0.99}}
+  {\putsubimage{./images/te-re-jae.png}{Andamenti (logaritmici) del Tempo di Esecuzione con il metodo di Jacobi}{png:te-re-jae}{0.4}{0.99}}
 
-%\putimagecouple
-%  {\putsubimage{./images/it-re-spa1.png}{Andamenti (logaritmici) su spa1.mtx}{png:it-re-spa1}{0.4}{0.8}}
-%  {\putsubimage{./images/it-re-spa2.png}{Andamenti (logaritmici) su spa2.mtx}{png:it-re-spa2}{0.4}{0.8}}
-
-%\putimagecouple
-%  {\putsubimage{./images/it-re-vem1.png}{Andamenti (logaritmici) su vem1.mtx}{png:it-re-vem1}{0.4}{0.8}}
-%  {\putsubimage{./images/it-re-vem2.png}{Andamenti (logaritmici) su vem2.mtx}{png:it-re-vem2}{0.4}{0.8}}
-
-\section{Test di Scalabilit\`a}
+\section{Scalabilit\`a sulla Dimensione}
 
 Le quattro matrici hanno dimensione diversa quindi gli andamenti soffrono anche della scala rispetto al numero di righe/colonne. Per verificare come scalano i metodi, per ognuno di essi sono state generate randomicamente delle matrici di base $A$ di dimensione variabile ($100 \rightarrow 10000$) con il requisito che soddisfino il criterio di convergenza e si sono annotati i tempi di esecuzione per valutarne l'andamento all'aumentare della dimensione della matrice di input.
-Per semplificare le esecuzioni si \`e deciso di utilizzare matrici a dominanza diagonale per tutte le matrici (per assicurarsi che i metodi stabili convergano).
 
-\section{Tenere d'Occhio il Condizionamento}
+\putimagecouple
+  {\putsubimage{./images/001-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD}{png:001-benchmark-N-elapsed}{0.4}{0.99}}
+  {\putsubimage{./images/002-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD}{png:002-benchmark-N-elapsed}{0.4}{0.99}}
 
-Sono stati eseguiti vari test senza variare la dimensione della matrice ed annotando il condizionamento per vedere come si comportano i metodi al variare di esso.
+In figura \ref{png:001-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici a dominanza diagonale simmetriche e definite positive su tutti e quattro i metodi risoluzione.
+I metodi stazionari convergono pi\`u in fretta al target ($10^-8$) dei metodi basati sul gradiente.
+
+Invece in figura \ref{png:002-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici simmetriche e definite positive sui metodi basati sul gradiente.
+Come detto in precedenza il metodo del Gradient Coniugato nel caso di matrici randomiche SPD converge molto pi\`u velocemente del metodo del Gradiente a causa del basso numero di iterazioni necessarie che bilancia il peso di ogni iterazione.
 
 \printbibliography[title={Bibliografia}]
 \end{document}

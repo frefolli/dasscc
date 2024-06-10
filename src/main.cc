@@ -1,4 +1,5 @@
 #include "dasscc/logging.hh"
+#include "dasscc/matrix.hh"
 #include <dasscc.hh>
 #include <cassert>
 #include <iostream>
@@ -15,6 +16,7 @@ struct CliConfig {
   std::string report_filepath = DEFAULT_REPORT_FILEPATH;
   bool dry_run = false;
   bool empty_run = false;
+  bool preload = false;
   bool verbose = false;
   bool solve = false;
   bool benchmark = false;
@@ -49,6 +51,7 @@ inline void PrintHelp(std::string executable) {
   std::cerr << "  -b/--benchmark <benchmark-filepath>   Expects a json Benchmark filepath" << std::endl;
   std::cerr << "  -d/--dry-run                          Exit after parsing specifiers" << std::endl;
   std::cerr << "  -e/--empty-run                        Exit after loading matrix" << std::endl;
+  std::cerr << "  -p/--preload                          Load Matrix and computes it's condition number" << std::endl;
   std::cerr << "  -v/--verbose                          Verbose log" << std::endl;
   std::cerr << std::endl;
   std::cerr << "Actions:" << std::endl;
@@ -110,6 +113,8 @@ inline void ParseArguments(int argc, char** args, CliConfig& cli_config) {
       cli_config.dry_run = true;
     } else if (argument == "-e" || argument == "--empty-run") {
       cli_config.empty_run = true;
+    } else if (argument == "-p" || argument == "--preload") {
+      cli_config.preload = true;
     } else if (argument == "-v" || argument == "--verbose") {
       cli_config.verbose = true;
     }
@@ -184,6 +189,11 @@ int DoSolve(CliConfig& cli_config) {
   uint32_t N = A.cols();
   if (cli_config.verbose)
     dasscc::LogInfo("Loaded Matrix");
+
+  if (cli_config.preload) {
+    double_t condition_number = dasscc::ConditionNumber(A, matrix_specifier);
+    dasscc::LogInfo("condition_number = " + std::to_string(condition_number));
+  }
 
   if (cli_config.empty_run)
     return 0;

@@ -17,8 +17,8 @@ void TestConjugateGradientEngine();
 namespace dasscc {
   const uint32_t TESTING_MATRIX_SIZE = 50;
   const double_t TESTING_MATRIX_DENSITY = 0.05;
-  const double_t TESTING_TOL = 10e-8;
+  const double_t TESTING_TOL = 1e-8;
   const uint32_t TESTING_MAXITER = 30000;
-  const double_t TESTING_ATOL = 10e-6;
+  const double_t TESTING_ATOL = 1e-6;
 }
 #endif//DASSCC_TESTS

@@ -5,7 +5,7 @@ import logging
 import os
 from pesto.loaders import DassLogLoader, MatrixMarketLoader, JsonLoader
 from pesto.plotters import FunctionalPlotter, SparseMatrixPlotter
-from pesto.crafters import DiagonalDominanceReportCrafter, PerSolverDataCrafter, PerMatrixDataCrafter, ColumnDiagonalDominanceReportCrafter, RowDiagonalDominanceReportCrafter, ColumnDiagonalDominanceReportCrafter, BenchmarkReportCrafter
+from pesto.crafters import DiagonalDominanceReportCrafter, PerSolverDataCrafter, PerMatrixDataCrafter, ColumnDiagonalDominanceReportCrafter, RowDiagonalDominanceReportCrafter, BenchmarkReportCrafter
 
 def do_plot(config: argparse.Namespace) -> None:
   log = DassLogLoader.run(path=config.logpath)
@@ -39,16 +39,25 @@ def do_benchmark(config: argparse.Namespace) -> None:
   y='elapsed'
   FunctionalPlotter.run(input={f"benchmark-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
 
+def do_conditioning(config: argparse.Namespace) -> None:
+  reports = JsonLoader.run(path=config.conditioningpath)
+  x='condition_number'
+  #y='error'
+  y='elapsed'
+  FunctionalPlotter.run(input={f"conditioning-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
+
 if __name__ == "__main__":
   action_map: dict[str, typing.Callable[[argparse.Namespace], None]] = {
     'plot': do_plot,
     'spy': do_spy,
     'dom': do_dom,
-    'benchmark': do_benchmark
+    'benchmark': do_benchmark,
+    'conditioning': do_conditioning
   }
 
   cli = argparse.ArgumentParser()
   cli.add_argument('verb', type=str, choices=action_map.keys(), help='action to perform')
+  cli.add_argument('-c', '--conditioningpath', type=str, default='./report.json', help='dass conditioning path')
   cli.add_argument('-b', '--benchmarkpath', type=str, default='./report.json', help='dass benchmark path')
   cli.add_argument('-l', '--logpath', type=str, default='./logs', help='dass log path')
   cli.add_argument('-p', '--plotpath', type=str, default='./plots/logs', help='dass plot path')
