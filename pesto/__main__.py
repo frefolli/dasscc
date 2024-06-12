@@ -34,17 +34,18 @@ def do_dom(config: argparse.Namespace) -> None:
 def do_benchmark(config: argparse.Namespace) -> None:
   data = JsonLoader.run(path=config.benchmarkpath)
   reports = BenchmarkReportCrafter.run(input=data)
-  x='N'
+  x='density'
   #y='error'
   y='elapsed'
   FunctionalPlotter.run(input={f"benchmark-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
 
-def do_conditioning(config: argparse.Namespace) -> None:
-  reports = JsonLoader.run(path=config.conditioningpath)
-  x='condition_number'
+def do_sparsity(config: argparse.Namespace) -> None:
+  data = JsonLoader.run(path=config.sparsitypath)
+  reports = BenchmarkReportCrafter.run(input=data)
+  x='N'
   #y='error'
   y='elapsed'
-  FunctionalPlotter.run(input={f"conditioning-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
+  FunctionalPlotter.run(input={f"sparsity-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
 
 if __name__ == "__main__":
   action_map: dict[str, typing.Callable[[argparse.Namespace], None]] = {
@@ -52,12 +53,12 @@ if __name__ == "__main__":
     'spy': do_spy,
     'dom': do_dom,
     'benchmark': do_benchmark,
-    'conditioning': do_conditioning
+    'sparsity': do_sparsity
   }
 
   cli = argparse.ArgumentParser()
   cli.add_argument('verb', type=str, choices=action_map.keys(), help='action to perform')
-  cli.add_argument('-c', '--conditioningpath', type=str, default='./report.json', help='dass conditioning path')
+  cli.add_argument('-c', '--sparsitypath', type=str, default='./report.json', help='dass sparsity path')
   cli.add_argument('-b', '--benchmarkpath', type=str, default='./report.json', help='dass benchmark path')
   cli.add_argument('-l', '--logpath', type=str, default='./logs', help='dass log path')
   cli.add_argument('-p', '--plotpath', type=str, default='./plots/logs', help='dass plot path')
