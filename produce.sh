@@ -89,8 +89,8 @@ function send_directory_by_filesystem() {
 }
 
 function deliver_artifacts() {
-  send_directory_by_filesystem ./logs /mnt/c/Users/franc/Desktop/dasscc-logs
-  send_directory_by_filesystem ./plots /mnt/c/Users/franc/Desktop/dasscc-plots
+  send_directory_by_filesystem ./logs ~/Desktop/dasscc-logs
+  send_directory_by_filesystem ./plots ~/Desktop/dasscc-plots
 }
 
 function main() {
