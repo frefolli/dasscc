@@ -232,14 +232,28 @@ Anche qui gli andamenti dei due metodi si assomigliano asintoticamente: le due m
 Le quattro matrici hanno dimensione diversa quindi gli andamenti soffrono anche della scala rispetto al numero di righe/colonne. Per verificare come scalano i metodi, per ognuno di essi sono state generate randomicamente delle matrici di base $A$ di dimensione variabile ($100 \rightarrow 10000$) con il requisito che soddisfino il criterio di convergenza e si sono annotati i tempi di esecuzione per valutarne l'andamento all'aumentare della dimensione della matrice di input.
 
 \putimagecouple
-  {\putsubimage{./images/001-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD}{png:001-benchmark-N-elapsed}{0.4}{0.99}}
-  {\putsubimage{./images/002-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD}{png:002-benchmark-N-elapsed}{0.4}{0.99}}
+  {\putsubimage{./images/001-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD al variare della dimensione}{png:001-benchmark-N-elapsed}{0.4}{0.99}}
+  {\putsubimage{./images/002-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD al variare della dimensione}{png:002-benchmark-N-elapsed}{0.4}{0.99}}
 
 In figura \ref{png:001-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici a dominanza diagonale simmetriche e definite positive su tutti e quattro i metodi risoluzione.
 I metodi stazionari convergono pi\`u in fretta al target ($10^-8$) dei metodi basati sul gradiente.
 
 Invece in figura \ref{png:002-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici simmetriche e definite positive sui metodi basati sul gradiente.
 Come detto in precedenza il metodo del Gradient Coniugato nel caso di matrici randomiche SPD converge molto pi\`u velocemente del metodo del Gradiente a causa del basso numero di iterazioni necessarie che bilancia il peso di ogni iterazione.
+
+\section{Scalabilit\`a sulla Densit\`a}
+
+Infine \`e stato fatto uno studio per verificare come scalano i metodi al variare della densit\`a delle matrici sparse.
+
+\putimagecouple
+  {\putsubimage{./images/001-sparsity-density-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD al variare della densit\`a}{png:001-sparsity-density-elapsed}{0.4}{0.99}}
+  {\putsubimage{./images/002-sparsity-density-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD al variare della densit\`a}{png:002-sparsity-density-elapsed}{0.4}{0.99}}
+
+Questa volta i metodi stazionari sono stati eseguiti in sede separata fin dal principio.
+Dai due grafici emerge come il metodo di \textbf{Jacobi} aumenti di complessit\`a in maniera pi\`u lieve rispetto al metodi di \textbf{Gauss Seidel}, mentre il metodo del \textbf{Gradiente Coniugato} scala molto meglio del metodo del \textbf{Gradiente}.
+Non c'\`e da sorprendersi, la sezione precedente gi\`a aveva messo in evidenza questo aspetto (e del resto si pu\`o ipotizzare di porre un'equivalenza tra una matrice pi\`u piccola con densit\`a maggiore e una matrice pi\`u grande con densit\`a minore).
+La miglior velocit\`a del metodo di Jacobi si spiega principalmente dalla semplicit\`a delle operazioni al netto del maggior numero di iterazioni.
+Per il metodo del Gradiente Coniugato valgono le considerazioni della sezione precedente.
 
 \printbibliography[title={Bibliografia}]
 \end{document}

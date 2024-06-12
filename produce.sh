@@ -70,15 +70,15 @@ function benchmark_spd() {
 }
 
 function sparsity_rdd() {
-  python -m sparsity -R -v -s 200 -n 20 -k rdd
+  python -m sparsity -CPFR -v -k rdd
   python -m pesto sparsity
-  mv plots/logs/sparsity-condition_number-elapsed.png plots/001-sparsity-condition_number-elapsed.png
+  mv plots/logs/sparsity-density-elapsed.png plots/001-sparsity-density-elapsed.png
 }
 
 function sparsity_spd() {
-  python -m sparsity -R -v -s 400 -n 20 -k spd
+  python -m sparsity -CPFR -v -k spd
   python -m pesto sparsity
-  mv plots/logs/sparsity-condition_number-elapsed.png plots/002-sparsity-condition_number-elapsed.png
+  mv plots/logs/sparsity-density-elapsed.png plots/002-sparsity-density-elapsed.png
 }
 
 function send_directory_by_filesystem() {
@@ -99,8 +99,8 @@ function main() {
   #spy_of_attached_matrices
   #benchmark_rdd
   #benchmark_spd
-  sparsity_rdd
-  #sparsity_spd
+  #sparsity_rdd
+  sparsity_spd
   deliver_artifacts
 }
 

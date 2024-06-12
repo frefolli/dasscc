@@ -34,7 +34,7 @@ def do_dom(config: argparse.Namespace) -> None:
 def do_benchmark(config: argparse.Namespace) -> None:
   data = JsonLoader.run(path=config.benchmarkpath)
   reports = BenchmarkReportCrafter.run(input=data)
-  x='density'
+  x='N'
   #y='error'
   y='elapsed'
   FunctionalPlotter.run(input={f"benchmark-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
@@ -42,7 +42,7 @@ def do_benchmark(config: argparse.Namespace) -> None:
 def do_sparsity(config: argparse.Namespace) -> None:
   data = JsonLoader.run(path=config.sparsitypath)
   reports = BenchmarkReportCrafter.run(input=data)
-  x='N'
+  x='density'
   #y='error'
   y='elapsed'
   FunctionalPlotter.run(input={f"sparsity-{x}-{y}": reports}, crafter=None, x=x, y=y, scale=config.scale, ranges=None, outdir=config.plotpath)
