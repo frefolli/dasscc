@@ -69,16 +69,16 @@ function benchmark_spd() {
   mv plots/logs/benchmark-N-elapsed.png plots/002-benchmark-N-elapsed.png
 }
 
-function conditioning_rdd() {
-  python -m conditioning -R -v -s 200 -n 20 -k rdd
-  python -m pesto conditioning
-  mv plots/logs/conditioning-condition_number-elapsed.png plots/001-conditioning-condition_number-elapsed.png
+function sparsity_rdd() {
+  python -m sparsity -R -v -s 200 -n 20 -k rdd
+  python -m pesto sparsity
+  mv plots/logs/sparsity-condition_number-elapsed.png plots/001-sparsity-condition_number-elapsed.png
 }
 
-function conditioning_spd() {
-  python -m conditioning -R -v -s 400 -n 20 -k spd
-  python -m pesto conditioning
-  mv plots/logs/conditioning-condition_number-elapsed.png plots/002-conditioning-condition_number-elapsed.png
+function sparsity_spd() {
+  python -m sparsity -R -v -s 400 -n 20 -k spd
+  python -m pesto sparsity
+  mv plots/logs/sparsity-condition_number-elapsed.png plots/002-sparsity-condition_number-elapsed.png
 }
 
 function send_directory_by_filesystem() {
@@ -99,8 +99,8 @@ function main() {
   #spy_of_attached_matrices
   #benchmark_rdd
   #benchmark_spd
-  #conditioning_rdd
-  conditioning_spd
+  sparsity_rdd
+  #sparsity_spd
   deliver_artifacts
 }
 
