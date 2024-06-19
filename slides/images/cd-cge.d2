@@ -1,0 +1,40 @@
+direction: right
+Cnojugate-Gradient: {
+  i1: |latex A |
+  i2: |latex b |
+  i3: |latex x_k |
+  i4: |latex r_k |
+  i5: |latex d_k |
+  i7: |latex v_k |
+  o1: |latex \\frac{norm(r_k)}{norm(b)} |
+  o2: |latex alpha_k |
+  o3: |latex y |
+  o4: |latex x_n |
+  o5: |latex r_n |
+  o6: |latex z_k |
+  o7: |latex beta_k |
+  o8: |latex d_n |
+  o9: |latex v_n |
+
+  i4 -> o1
+  i5 -> o2
+  i4 -> o2
+  i7 -> o2
+  o2 -> o3
+  i5 -> o3
+  i3 -> o4
+  o3 -> o4
+  i2 -> o5
+  i1 -> o5
+  o4 -> o5
+  i1 -> o6
+  o5 -> o6
+  i5 -> o7
+  o6 -> o7
+  i7 -> o7
+  o5 -> o8
+  o7 -> o8
+  i5 -> o8
+  i1 -> o9
+  o8 -> o9
+}

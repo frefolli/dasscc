@@ -1,0 +1,21 @@
+direction: right
+Jacobi: {
+  i1: |latex A |
+  i2: |latex b |
+  i3: |latex x_k |
+  i4: |latex r_k |
+  i5: |latex diag(A)^{-1} |
+  o1: |latex \\frac{norm(r_k)}{norm(b)} |
+  o2: |latex y |
+  o3: |latex x_n |
+  o4: |latex r_n |
+
+  i4 -> o1
+  i5 -> o2
+  i4 -> o2
+  i3 -> O3
+  o2 -> o3
+  i1 -> O4
+  i2 -> O4
+  o3 -> o4
+}
