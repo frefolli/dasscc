@@ -9,7 +9,7 @@ import os
 def matrix_patterns(config: argparse.Namespace) -> Iterable[str]:
   d = config.mindensity
   while d <= config.maxdensity:
-    yield f"{config.kind}:400:{d}"
+    yield f"{config.kind}:800:{d}"
     if config.ratiodensity > 1:
       d *= config.ratiodensity
     else:
@@ -38,9 +38,9 @@ def fresh(config: argparse.Namespace) -> None:
 if __name__ == "__main__":
   cli = argparse.ArgumentParser()
   cli.add_argument('-k', '--kind', type=str, choices=['rdd', 'spd'], default='rdd', help='Minimum Matrix density')
-  cli.add_argument('-f', '--mindensity', type=int, default=0.001, help='Minimum Matrix density')
-  cli.add_argument('-t','--maxdensity', type=int, default=0.04, help='Maximum Matrix density')
-  cli.add_argument('-s','--stepdensity', type=int, default=0.005, help='Step of Matrix densitys')
+  cli.add_argument('-f', '--mindensity', type=int, default=0.016, help='Minimum Matrix density')
+  cli.add_argument('-t','--maxdensity', type=int, default=0.08, help='Maximum Matrix density')
+  cli.add_argument('-s','--stepdensity', type=int, default=0.010, help='Step of Matrix densitys')
   cli.add_argument('-r','--ratiodensity', type=int, default=1, help='Ratio of Matrix densities (if enabled, ratiodensity > 1, it overrides stepdensity)')
   cli.add_argument('-v', '--verbose', action='store_true', default=False, help='verbose output')
   cli.add_argument('-C', '--configure', action='store_true', default=False, help='configure benchmark')

@@ -9,7 +9,7 @@ import os
 def matrix_patterns(config: argparse.Namespace) -> Iterable[str]:
   N = config.minsize
   while N <= config.maxsize:
-    yield f"{config.kind}:{N}:0.10"
+    yield f"{config.kind}:{N}:0.03"
     if config.ratiosize > 1:
       N *= config.ratiosize
     else:
@@ -18,7 +18,7 @@ def matrix_patterns(config: argparse.Namespace) -> Iterable[str]:
 def configure(config: argparse.Namespace) -> None:
   conf = {
     'matrix_patterns': list(matrix_patterns(config)), 'tols': [
-      1e-8
+      1e-4
     ]
   }
   with open("benchmark.json", mode="w") as file:

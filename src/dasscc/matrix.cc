@@ -192,7 +192,7 @@ void dasscc::RandomRowDiagonalDominant(Eigen::SparseMatrix<double_t, Eigen::RowM
   dasscc::Random(Q, N, N, density);
   matrix = (Eigen::SparseMatrix<double_t, Eigen::RowMajor>(Q.transpose()) * Q);
   for (uint32_t i = 0; i < N; i++) {
-    matrix.coeffRef(i, i) = (abs(matrix.row(i).sum()) + matrix.coeff(i, i) + 10) * 20;
+    matrix.coeffRef(i, i) = (abs(matrix.row(i).cwiseAbs().sum()) + abs(matrix.coeff(i, i)) + 0.1);
   }
 }
 
@@ -201,7 +201,7 @@ void dasscc::RandomColumnDiagonalDominant(Eigen::SparseMatrix<double_t, Eigen::R
   dasscc::Random(Q, N, N, density);
   matrix = (Eigen::SparseMatrix<double_t, Eigen::RowMajor>(Q.transpose()) * Q);
   for (uint32_t i = 0; i < N; i++) {
-    matrix.coeffRef(i, i) = (abs(matrix.col(i).sum()) + matrix.coeff(i, i) + 10) * 20;
+    matrix.coeffRef(i, i) = (abs(matrix.col(i).cwiseAbs().sum()) + abs(matrix.coeff(i, i)) + 0.1);
   }
 }
 

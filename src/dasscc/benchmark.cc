@@ -256,11 +256,11 @@ void dasscc::ExecuteBenchmark(dasscc::Report& report, const dasscc::Benchmark& b
   for (std::string matrix_pattern : benchmark.matrix_patterns) {
     dasscc::MatrixSpecifier matrix_specifier = dasscc::ParseMatrixSpecifier(matrix_pattern);
     for (double_t tol : benchmark.tols) {
-      // RunIfNotAlready<dasscc::JacobiEngine>(report, matrix_specifier, tol);
-      // RunIfNotAlready<dasscc::GaussSeidelEngine>(report, matrix_specifier, tol);
+      RunIfNotAlready<dasscc::JacobiEngine>(report, matrix_specifier, tol);
+      RunIfNotAlready<dasscc::GaussSeidelEngine>(report, matrix_specifier, tol);
       // RunIfNotAlready<dasscc::RichardsonEngine>(report, matrix_specifier, tol);
-      RunIfNotAlready<dasscc::GradientEngine>(report, matrix_specifier, tol);
-      RunIfNotAlready<dasscc::ConjugateGradientEngine>(report, matrix_specifier, tol);
+      // RunIfNotAlready<dasscc::GradientEngine>(report, matrix_specifier, tol);
+      // RunIfNotAlready<dasscc::ConjugateGradientEngine>(report, matrix_specifier, tol);
     }
   }
 }

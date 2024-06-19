@@ -205,7 +205,7 @@ Si segnala fin da subito che tutte le matrici convergono per i vari metodi, risu
 \subsection{Metodi basati sul Gradiente}
 
 I due metodi basati sul gradiente hanno un andamento simile: lavorano bene sulle due matrici a bande (vem1/vem2), mentre hanno qualche leggera difficolt\`a a convergere con tolleranze p\`u basse con le due matrici "dense" randomiche (spa1/spa2).
-Un dato significativo \`e il numero di iterazioni necessarie, per il metodo del \textbf{Gradiente Coniugato} \`e di molto inferiore rispetto a quello del \textbf{Gradiente}. A prima vista pu\`o sembrare che il metodo del Gradiente Coniugato sia pi\`u lento per il fatto che esegue pi\`u operazioni per ogni iterazione rispetto al Gradiente, ma siccome il numero di iterazioni \`e complessivamente di scala pi\`u bassa, abbiamo una priva evidenza che suggerisce che sia pi\`u mediamente veloce.
+Un dato significativo \`e il numero di iterazioni necessarie, per il metodo del \textbf{Gradiente Coniugato} \`e di molto inferiore rispetto a quello del \textbf{Gradiente}. A prima vista pu\`o sembrare che il metodo del Gradiente Coniugato sia pi\`u lento per il fatto che esegue pi\`u operazioni per ogni iterazione rispetto al Gradiente, ma siccome il numero di iterazioni \`e complessivamente di scala pi\`u bassa, abbiamo una priva evidenza che suggerisce che sia mediamente pi\`u veloce.
 
 \putimagecouple
   {\putsubimage{./images/it-re-cge.png}{Andamenti (logaritmici) del Numero di Iterazioni con il metodo del Gradiente Coniugato}{png:it-re-cge}{0.4}{0.99}}
@@ -235,8 +235,9 @@ Le quattro matrici hanno dimensione diversa quindi gli andamenti soffrono anche 
   {\putsubimage{./images/001-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD al variare della dimensione}{png:001-benchmark-N-elapsed}{0.4}{0.99}}
   {\putsubimage{./images/002-benchmark-N-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD al variare della dimensione}{png:002-benchmark-N-elapsed}{0.4}{0.99}}
 
-In figura \ref{png:001-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici a dominanza diagonale simmetriche e definite positive su tutti e quattro i metodi risoluzione.
-I metodi stazionari convergono pi\`u in fretta al target ($10^-8$) dei metodi basati sul gradiente.
+In figura \ref{png:001-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici a dominanza diagonale simmetriche e definite positive su metodi stazionari.
+Prese delle matrici a dominanzia diagonale casuali si scopre che il metodo di Jacobi converge mediamente pi\`u lentamente del metodo di Gauss-Seidel, un dato in controtendenza rispetto alla sezione precedente.
+Il termine \textit{velocit\`a} \`e da intendersi sia in termini di iterazioni che di tempo, infatti il grande numero di iterazioni necessario (emerso anche con le matrici allegate) nel caso medio porta il metodo di Jacobi a impiegare anche $10 \times$ il tempo necessario a Gauss-Seidel.
 
 Invece in figura \ref{png:002-benchmark-N-elapsed} si riportano i risultati del benchmark su matrici simmetriche e definite positive sui metodi basati sul gradiente.
 Come detto in precedenza il metodo del Gradient Coniugato nel caso di matrici randomiche SPD converge molto pi\`u velocemente del metodo del Gradiente a causa del basso numero di iterazioni necessarie che bilancia il peso di ogni iterazione.
@@ -249,11 +250,8 @@ Infine \`e stato fatto uno studio per verificare come scalano i metodi al variar
   {\putsubimage{./images/001-sparsity-density-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici RDD al variare della densit\`a}{png:001-sparsity-density-elapsed}{0.4}{0.99}}
   {\putsubimage{./images/002-sparsity-density-elapsed.png}{Andamenti (lineari) del Tempo di Esecuzione con matrici SPD al variare della densit\`a}{png:002-sparsity-density-elapsed}{0.4}{0.99}}
 
-Questa volta i metodi stazionari sono stati eseguiti in sede separata fin dal principio.
-Dai due grafici emerge come il metodo di \textbf{Jacobi} aumenti di complessit\`a in maniera pi\`u lieve rispetto al metodi di \textbf{Gauss Seidel}, mentre il metodo del \textbf{Gradiente Coniugato} scala molto meglio del metodo del \textbf{Gradiente}.
+Dai due grafici emerge come il metodo di \textbf{Jacobi} aumenti di complessit\`a in maniera pi\`u pesante rispetto al metodo di \textbf{Gauss Seidel} (il quale risulta \textit{quasi} piatto), mentre il metodo del \textbf{Gradiente Coniugato} scala molto meglio del metodo del \textbf{Gradiente}.
 Non c'\`e da sorprendersi, la sezione precedente gi\`a aveva messo in evidenza questo aspetto (e del resto si pu\`o ipotizzare di porre un'equivalenza tra una matrice pi\`u piccola con densit\`a maggiore e una matrice pi\`u grande con densit\`a minore).
-La miglior velocit\`a del metodo di Jacobi si spiega principalmente dalla semplicit\`a delle operazioni al netto del maggior numero di iterazioni.
-Per il metodo del Gradiente Coniugato valgono le considerazioni della sezione precedente.
 
 \printbibliography[title={Bibliografia}]
 \end{document}

@@ -58,13 +58,13 @@ function dominance_reports() {
 }
 
 function benchmark_rdd() {
-  python -m benchmark -CFR -r 2 -v -k spd
+  python -m benchmark -CFR -r 2 -v -k rdd
   python -m pesto benchmark
   mv plots/logs/benchmark-N-elapsed.png plots/001-benchmark-N-elapsed.png
 }
 
 function benchmark_spd() {
-  python -m benchmark -CFR -r 2 -v -k rdd
+  python -m benchmark -CFR -r 2 -v -k spd
   python -m pesto benchmark
   mv plots/logs/benchmark-N-elapsed.png plots/002-benchmark-N-elapsed.png
 }
@@ -100,7 +100,7 @@ function main() {
   #benchmark_rdd
   #benchmark_spd
   #sparsity_rdd
-  sparsity_spd
+  #sparsity_spd
   deliver_artifacts
 }
 
