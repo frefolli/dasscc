@@ -128,7 +128,7 @@ I metodi implementati partono dal vettore iniziale nullo e si arrestano qualora 
 
 \paragraph{Tecnologie utilizzate}
 
-Per l'implementazione si \`e scelto di sviluppare la libreria in C++ con Eigen, una nota libreria Free and Open Source per la gestione di  matrici dense e sparse. Per verificare la qualit\`a delle implementazioni dei metodi sono stati costruiti dei test basati sui requisiti di convergenza dei metodi stesso (matrici a dominanza diagonale o simmetriche e definite positive).
+Per l'implementazione si \`e scelto di sviluppare la libreria in C++ con Eigen, una nota libreria Free and Open Source per la gestione di  matrici dense e sparse. Per verificare la qualit\`a delle implementazioni dei metodi sono stati costruiti dei test basati sui requisiti di convergenza dei metodi stesso (matrici a dominanza diagonale stretta o simmetriche e definite positive).
 
 \section{Architettura della libreria}
 
@@ -200,7 +200,7 @@ In figura \ref{png:dominance} si riportano i rapporti di dominanza diagonale (pe
 
 Sono state effettuate delle esecuzioni al variare della tolleranza, del metodo di risoluzione e della matrice di base $A$ (il problema \`e generato prendendo $x_e$ = $<1,.., 1>$ e quindi $b = Ax_e$) scelta tra le quattro matrici allegate al testo della consegna.
 Si riportano gli andamenti del numero di iterazioni impiegati per completare la risoluzione con i vari metodi (in scala semilogaritmica sulla $Y$, per facilitarne la consultazione siccome i grafici lineari risultano di difficile lettura).
-Si segnala fin da subito che tutte le matrici convergono per i vari metodi, risultato importante visto che la convergenza di Gauss Seidel e Jacobi sulle matrici simmetriche e definite positive non \`e certa.
+Si segnala fin da subito che tutte le matrici convergono per i vari metodi, risultato importante visto che la convergenza di Gauss Seidel e Jacobi sulle matrici simmetriche e definite positive non a dominanza diagonale stretta non \`e certa.
 
 \subsection{Metodi basati sul Gradiente}
 
