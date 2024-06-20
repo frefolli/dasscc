@@ -38,7 +38,11 @@ docs:
 
 report/main.pdf: report/main.tex report/images/*
 	make -C report
-	cp report/main.pdf ~/Desktop/dasscc.pdf
+	cp report/main.pdf ~/Desktop/report-dasscc.pdf
+
+slides/main.pdf: slides/main.tex slides/images/*
+	make -C slides
+	cp slides/main.pdf ~/Desktop/slides-dasscc.pdf
 
 edit:
-	lvim report/main.tex
+	lvim slides/main.tex

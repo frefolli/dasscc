@@ -1,0 +1,12 @@
+*.idx
+main.pdf
+*-blx.bib
+*.aux
+*.log
+*.run.xml
+*.toc
+*.ilg
+*.ind
+*.snm
+*.nav
+*.out
